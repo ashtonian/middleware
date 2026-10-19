@@ -26,9 +26,11 @@ if [ ! -L "$root/lib" ]; then
 fi
 target="$root/usr/lib/modules/$release/kernel/drivers/nvme/target"
 if [ "$expect" = unsupported ]; then
-    install -m 644 "$u4/base-nvme/target/nvmet.ko" "$u4/base-nvme/target/nvmet-tcp.ko" "$target/"
+    install -m 644 "$u4/base-nvme/target/nvmet.ko" "$u4/base-nvme/target/nvmet-tcp.ko" \
+        "$u4/base-nvme/target/nvmet-rdma.ko" "$target/"
 fi
-sha256sum "$image_deb" "$root/boot/vmlinuz-$release" "$target/nvmet.ko" "$target/nvmet-tcp.ko" > "$results/inputs.sha256"
+sha256sum "$image_deb" "$root/boot/vmlinuz-$release" "$target/nvmet.ko" "$target/nvmet-tcp.ko" \
+    "$target/nvmet-rdma.ko" > "$results/inputs.sha256"
 
 python3 - "$root" "$release" <<'PY'
 from pathlib import Path
@@ -39,7 +41,8 @@ root, release = Path(sys.argv[1]), sys.argv[2]
 modules = root / 'usr/lib/modules' / release
 subprocess.run(['depmod', '-b', str(root), release], check=True)
 keep = set()
-for name in ['nvmet', 'nvmet_tcp', 'nvme_tcp']:
+# NVMe/TCP and NVMe/RDMA target and host, soft-RoCE and its guest-local dummy netdev.
+for name in ['nvmet', 'nvmet_tcp', 'nvme_tcp', 'nvmet_rdma', 'nvme_rdma', 'rdma_rxe', 'dummy']:
     output = subprocess.check_output(['modprobe', '-d', str(root), '-S', release, '--show-depends', name], text=True)
     keep.update(Path(line.split()[1]) for line in output.splitlines() if line.startswith('insmod '))
 # modprobe reports paths through the /lib symlink.

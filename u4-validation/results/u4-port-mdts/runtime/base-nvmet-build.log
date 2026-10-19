@@ -21,10 +21,10 @@ make[1]: Entering directory '/work/u4/base-nvme/target'
   CC [M]  tcp.o
   LD [M]  nvmet.o
   LD [M]  nvme-loop.o
-  LD [M]  nvmet-fc.o
-  LD [M]  nvmet-tcp.o
   LD [M]  nvme-fcloop.o
+  LD [M]  nvmet-fc.o
   LD [M]  nvmet-rdma.o
+  LD [M]  nvmet-tcp.o
   MODPOST Module.symvers
   CC [M]  nvmet.mod.o
   CC [M]  .module-common.o
@@ -35,14 +35,14 @@ make[1]: Entering directory '/work/u4/base-nvme/target'
   CC [M]  nvmet-tcp.mod.o
   LD [M]  nvme-loop.ko
   BTF [M] nvme-loop.ko
-  LD [M]  nvmet.ko
   LD [M]  nvmet-fc.ko
-  BTF [M] nvmet.ko
   BTF [M] nvmet-fc.ko
-  LD [M]  nvme-fcloop.ko
   LD [M]  nvmet-rdma.ko
-  BTF [M] nvme-fcloop.ko
+  LD [M]  nvme-fcloop.ko
   BTF [M] nvmet-rdma.ko
+  BTF [M] nvme-fcloop.ko
+  LD [M]  nvmet.ko
+  BTF [M] nvmet.ko
   LD [M]  nvmet-tcp.ko
   BTF [M] nvmet-tcp.ko
 make[1]: Leaving directory '/work/u4/base-nvme/target'

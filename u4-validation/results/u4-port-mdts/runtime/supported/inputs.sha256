@@ -2,4 +2,5 @@
 f53a0de1cea2a68f02324345cc1d66b2599fd51667942f8f0e111beef5ba8350  /work/u4/guest-supported/boot/vmlinuz-6.18.55-production+truenas
 a712f05d5be2fb88879fa49b53269cfca7b92e87b2d34ba5b8c06fe2040d4531  /work/u4/guest-supported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet.ko
 d6242ad90e5818b5ae79ab5e92adbb3d3fad7b5d1605a10cc26015070aac4d00  /work/u4/guest-supported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet-tcp.ko
-c5fb8fd71ac5b98ce572ca07fc9aea1b955eb1316d7c2e319a8fced2d5bd22fb  /work/u4/results/supported/initramfs.gz
+cc43c014f7547f443489604ee23a272757b80c0b00c0058a503f961770eed388  /work/u4/guest-supported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet-rdma.ko
+2ce47dc32c55a23624d83166d75e69af9d0b1892907088a80bc5393fb4502ad8  /work/u4/results/supported/initramfs.gz

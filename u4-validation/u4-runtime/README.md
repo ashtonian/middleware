@@ -18,11 +18,12 @@ gathers for a non-HA system and for HA node A with ANA enabled.
 
 | Guest | Kernel | Checks |
 | --- | --- | --- |
-| `supported` | Qualified U3 production package `6.18.55-production+truenas` (`9d9d9d7`) | Limit written before link; Identify MDTS and host `max_hw_sectors_kb`; 1 MiB direct I/O; unchanged re-render on an enabled port; kernel refusal of a changed limit on an enabled port; disable/change/enable to 1 MiB and to `null`; ANA-derived port `5001` |
+| `supported` | Qualified U3 production package `6.18.55-production+truenas` (`9d9d9d7`) | Limit written before link; Identify MDTS and host `max_hw_sectors_kb`; 1 MiB direct I/O; unchanged re-render on an enabled port; kernel refusal of a changed limit on an enabled port; disable/change/enable to 1 MiB and to `null`; ANA-derived port `5001`; the same limit and clearing on an NVMe/RDMA port over soft-RoCE (`rdma_rxe` on a guest-local `dummy` netdev) |
 | `unsupported` | Same kernel image with `nvmet`/`nvmet-tcp` rebuilt from TrueNAS base `e43b652` | `null` ports render and serve without `param_mdts`; a port with a limit is reported unserved and gets no subsystems while other ports serve, on a running target and on a fresh start; a served port whose limit becomes inapplicable loses its links; clearing the limit serves the port |
 
-U3 changes only `drivers/nvme/target`, the `nvmet` and `nvmet-tcp` modules. For
-the target driver, the production kernel with base modules is the base kernel.
+U3 changes only `drivers/nvme/target`. The base guest replaces `nvmet`,
+`nvmet-tcp` and `nvmet-rdma`, so the production kernel with base modules is the
+base kernel for the target driver.
 `build-base-nvmet.sh` verifies the build tree's seven target files against the
 candidate and the replacements against base. It builds with the tree's
 configuration and `Module.symvers`, then signs with the tree's build key, as

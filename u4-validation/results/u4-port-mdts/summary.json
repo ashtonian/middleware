@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-19T05:00:36Z",
+  "recorded_at_utc": "2026-10-19T05:22:41Z",
   "repository": "truenas/middleware",
   "base": {
     "ref": "master",
@@ -9,16 +9,17 @@
   },
   "candidate": {
     "branch": "ashtonian:work/u4-port-transfer-limit",
-    "sha": "bd9a462e8a1f6b7d854e284ecce37a9cd6c7df1e",
-    "tree": "091145fa37d5f3c3316fbef579081f19d72edf83",
+    "sha": "6dfe295f571bf10d60f5fde65f8d519f5254df25",
+    "tree": "4bb4144d97a720e41a6cfd8b215aa65fa4bae3be",
     "signature": {
-      "local": "good for both commits (RSA F6636B543217293818FDAE098D8E2EDE4DB48014)",
+      "local": "good for all three commits (RSA F6636B543217293818FDAE098D8E2EDE4DB48014)",
       "github": "verified, reason valid"
     },
     "alembic_head": "d5b7b7c0dc05",
     "commits": [
       "4d1a00b562c0445a0993450817382422bb397a7a nvmet: persist a per-port maximum data transfer size",
-      "bd9a462e8a1f6b7d854e284ecce37a9cd6c7df1e nvmet: keep serving other ports when a port limit cannot be applied"
+      "bd9a462e8a1f6b7d854e284ecce37a9cd6c7df1e nvmet: keep serving other ports when a port limit cannot be applied",
+      "6dfe295f571bf10d60f5fde65f8d519f5254df25 nvmet: allow max_data_transfer_size on RDMA ports"
     ]
   },
   "environment": {
@@ -32,13 +33,13 @@
   "results": {
     "new_unit_tests": {
       "log": "new-tests.log",
-      "result": "72 passed (61 U4 renderer/validation/schema/alert tests and 11 alert applicability inventory checks)"
+      "result": "78 passed (67 U4 renderer/validation/schema/alert tests and 11 alert applicability inventory checks)"
     },
     "negative_control_master_sources": {
       "replaced": "api/v28_0_0/nvmet_port.py, plugins/nvmet/port.py, plugins/nvmet/global.py, utils/nvmet/kernel.py, etc_files/nvmet_kernel.py at 005a496",
       "plugin_tests": {
         "log": "negative-control-plugin.log",
-        "result": "25 failed, 8 passed (schema rejections and the no-limit SPDK switch also pass on master)"
+        "result": "31 failed, 8 passed (schema rejections and the no-limit SPDK switch also pass on master)"
       },
       "renderer_tests": {
         "log": "negative-control-renderer-and-plugin.log",
@@ -48,7 +49,7 @@
     "full_unit_suite": {
       "command": "PYTHONPATH=. FAKE_ENV=1 pytest-3 middlewared/pytest (CI unittests.yml)",
       "log": "unit-full.log",
-      "result": "3203 passed, 16 failed, 4 skipped",
+      "result": "3209 passed, 16 failed, 4 skipped",
       "failures": "16 in plugins/vm/test_state_utils.py and plugins/test_truenas_s3_on_disk.py; all ENOSYS (errno 38) from openat2/renameat2 under emulated amd64; modules untouched by U4"
     },
     "docs_changelog_tests": {
@@ -75,7 +76,7 @@
       },
       "supported": {
         "modules": "packaged candidate nvmet/nvmet-tcp (9d9d9d7)",
-        "result": "PASS, 11 records",
+        "result": "PASS, 14 records (TCP, ANA and NVMe/RDMA over soft-RoCE on a guest-local dummy netdev)",
         "records": [
           {
             "test": "environment",
@@ -151,6 +152,27 @@
             "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
           },
           {
+            "test": "soft_roce",
+            "status": "PASS",
+            "links": "link rxe0/1 state ACTIVE physical_state LINK_UP netdev u4rdma0"
+          },
+          {
+            "test": "rdma_limit_written_before_link",
+            "status": "PASS",
+            "param_mdts": 6,
+            "mdts": 6,
+            "max_hw_sectors_kb": 256,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "rdma_clear_restores_transport_limit",
+            "status": "PASS",
+            "param_mdts": 0,
+            "mdts": 8,
+            "max_hw_sectors_kb": 1024,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
             "test": "teardown",
             "status": "PASS"
           },
@@ -161,7 +183,7 @@
         ]
       },
       "unsupported": {
-        "modules": "nvmet/nvmet-tcp rebuilt from base e43b652 against the production tree, signed with its build key (loaded as out-of-tree, signature verified)",
+        "modules": "nvmet/nvmet-tcp/nvmet-rdma rebuilt from base e43b652 against the production tree, signed with its build key (loaded as out-of-tree, signature verified)",
         "result": "PASS, 10 records",
         "records": [
           {
@@ -232,7 +254,8 @@
       },
       "rejected_baseline": "Debian trixie 6.12.113 lacks the namespace resv_enable attribute that middleware master writes on every namespace, so it cannot run the current renderer independent of U4; replaced by base modules on the qualified kernel",
       "harness_iteration": "An earlier unsupported run failed in the harness: with native multipath a second controller to the same subsystem joins the existing namespace head; the harness disconnects port 1 before checking port 2. Both final runs used identical guest files.",
-      "renderer_sha256": "43d9bed295fb82128a56640cd72bbbf34d78cadf82e29c6644b134df672592b6"
+      "renderer_sha256": "43d9bed295fb82128a56640cd72bbbf34d78cadf82e29c6644b134df672592b6",
+      "renderer_note": "Guest inputs staged from bd9a462; utils/nvmet/kernel.py, render_common.py and plugins/nvmet/constants.py are byte-identical at 6dfe295f571bf10d60f5fde65f8d519f5254df25"
     }
   },
   "not_run": [
@@ -241,37 +264,37 @@
     "live Identify/command traces on appliance hardware (guest Identify ran in the disposable TCG lab only)"
   ],
   "files_sha256": {
-    "docs-tests.log": "9a94e9bc971fe255dc3b3cc1cd2baa7b9cd0709cd3fc36c35e06a205b8433227",
+    "docs-tests.log": "75151b6e40e0a77efb5718d57b8b337bbaf7defbd50bba2088fd9aa9b4a5f25f",
     "migration.log": "17ce2a467fc18f7785bd060810d27f42435c3b3835c8d82d1e830fcb83e5ae4b",
-    "negative-control-plugin.log": "3428469fa4411e08e23724d982e90932bb85b11f84942d126b39d1ee0cbbeeb1",
-    "negative-control-renderer-and-plugin.log": "74702b3f72a5548f3819a7eb15172554698a921e41b0f53791944e309d192dd3",
-    "new-tests.log": "68d841e42537563bb10f76ebf00936388763be0a528a6c9692efaab0f997cf8d",
+    "negative-control-plugin.log": "c8c93c21535a4cada4fb59ba886c80226b616203cabe105477a0ae0354114389",
+    "negative-control-renderer-and-plugin.log": "d5dde9bce4bc84bcf8c40ac54b3f14e7a44dab9b2986955d95a4fda6a332b28b",
+    "new-tests.log": "bd42d281bf8129eb8a70e34d6e499ea4784268914a371b5e488dc18d728fc556",
     "ruff.log": "c6446f9cce33d5d44c2cf18677e71865931755b17815735c6c4ec0e698772d62",
-    "runtime/base-modules.txt": "65603ecc83404f6e4e7ae929300088bf8bc308658820c6de0f7c534749253342",
-    "runtime/base-nvmet-build.log": "abb96d2deb9d28a10ee3132f4a8e153514c0342793f649b9c814b89167cd76df",
+    "runtime/base-modules.txt": "6a9046e16aaa15e46fa25e5bbf75018c868ad27cb87f20ba8db21e4b9e4cac50",
+    "runtime/base-nvmet-build.log": "06e97543c1989df91bd62d0fd85a3c64e63a7e80c67846e448e9df59bfe12e82",
     "runtime/base-src.sha256": "0a28829d9b492f99f5295e5dda2b08ea29206d2e7fbf705c536e50cc8922c452",
     "runtime/candidate-src.sha256": "e98272bc9a3d0961aa47e248b8cd3d28d58d7f0cc3fe7e0645ed8b28d1da4d7a",
-    "runtime/supported/console.log": "e844f7110da01e5671bae5e897fc3fe7982ad88f7588205f39905ee58b5a9dee",
-    "runtime/supported/guest-files.sha256": "fe5eb7446a5376c02ce92883149a08ada6982ed133b0bad6da27653068d11a35",
-    "runtime/supported/guest/checks.log": "1935d1343d36476346237272eb013af64ba3bc5dd3308aa22e2eae3e53afde1a",
-    "runtime/supported/guest/dmesg.log": "f192fe9fceec57c11d6d767e03ef438830eb372e42f3c6df3998523c7b468601",
-    "runtime/supported/guest/results.json": "94a2ada6971661f15ce065fcd847366e3a02f1e2f929874ce30eb7a156df10cb",
-    "runtime/supported/inputs.sha256": "3f646d3111d1675a0fdd10cffbf497611e6bbd068b68f29079c5e1cd086319ca",
+    "runtime/supported/console.log": "300313645496e982c8c702086304f5d0ada8e6e669e7907a554884c634ae0055",
+    "runtime/supported/guest-files.sha256": "1d447ed183d1a0c04edf850971a8a3cc2f5d10e460dc0198bdae061c289c5161",
+    "runtime/supported/guest/checks.log": "2f154a42a4813741365d0a55e94c3bd39690e2e3457fc2bef7835d01ac854e20",
+    "runtime/supported/guest/dmesg.log": "da61f4bb7f1f9b3c7f051e2a643ebfc9a77daeea736428d15f13a6366738fc90",
+    "runtime/supported/guest/results.json": "34e902394b81da15ea5377ca7c240acc08fe1930b3c2af77135593c87aa4aa48",
+    "runtime/supported/inputs.sha256": "5daf3afd5850471da8cce0b206bdee33cbacc65f80ea17c0b8a482352a2165e5",
     "runtime/supported/qemu.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
     "runtime/supported/qemu.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "runtime/unsupported/console.log": "f0568260764a2599086f3a4adae5fc86fc43594d289b34c058b2397b6d3cec7d",
-    "runtime/unsupported/guest-files.sha256": "fe5eb7446a5376c02ce92883149a08ada6982ed133b0bad6da27653068d11a35",
+    "runtime/unsupported/console.log": "a4ee279c6884b4fb019f8ea00fde98082556ae4ee9fd6596ef1a154c0b346b4f",
+    "runtime/unsupported/guest-files.sha256": "1d447ed183d1a0c04edf850971a8a3cc2f5d10e460dc0198bdae061c289c5161",
     "runtime/unsupported/guest/checks.log": "d56458a3078210c5e10c8ff126d074c66a99d53984dea87033afe9c75606ea1f",
-    "runtime/unsupported/guest/dmesg.log": "5b4a967c9fb8f8a81bcc7363c964a4a27e9cc2cab627d1172f22ce5ffbe5e928",
+    "runtime/unsupported/guest/dmesg.log": "2ff86607c512dea2d3a6a5ac921e176cdbcd63ec9322fade4a8a95ecad3f8747",
     "runtime/unsupported/guest/results.json": "e8141d792030cf84aff367673239eeb48ff19751ccceaaa8bcc431034ddaa810",
-    "runtime/unsupported/inputs.sha256": "3dc877ddf25ccd187e25c94d592e80577867f0bf8d3cb70b44a2c6abf111d380",
+    "runtime/unsupported/inputs.sha256": "2153033d55acb954a8955f19ad72330138897823988b518dacd8dae703912cdc",
     "runtime/unsupported/qemu.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
     "runtime/unsupported/qemu.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unit-full.log": "33c66ad069219701bebcdae64448b5fa4eaff9dfc324b728da2c01dc2847292b"
+    "unit-full.log": "f79e1d099848f61e0e8757dac94a3ce44f3f022e8fd3d02b4e835128e535369a"
   },
   "scenario_mapping": {
     "I03/C06 omitted or null setting, old rows": "PASS: unit (schema/validation), migration (existing row NULL), guest (null renders 0 on candidate, omitted on base kernel; legacy port serves)",
-    "I03/C06 valid setting": "PASS: guest Identify MDTS 6/8 and host max_hw_sectors_kb 256/1024 with 1 MiB direct I/O checksums",
+    "I03/C06 valid setting": "PASS: guest Identify MDTS 6/8 with host max_hw_sectors_kb 256/1024 and 1 MiB direct I/O checksums, over NVMe/TCP and NVMe/RDMA (soft-RoCE); ANA-derived port receives the limit",
     "I03/C06 invalid setting": "PASS: unit (API schema rejects 0/4 KiB/8 KiB/1.5 MiB/2 MiB/bool/string)",
     "I03/C06 unsupported setting": "PASS: unit (RDMA/FC/SPDK/running kernel without param_mdts rejected before mutation; renderer records the port and links no subsystems; etc renderer raises/clears the NVMetPortTransferSizeUnsupported alert); guest (limited port gets no subsystems while other ports serve, on a running target and on a fresh start; a served port is unlinked when its limit becomes inapplicable). When support is undeterminable at request time the explicit rejection is the alert, not the API call (PR-U4.md decision 3)",
     "I03/C06 live-port change and failed reload preserving prior state": "PASS: unit (active-port rejection incl. combined disable); guest (kernel refuses changed value on an enabled port, prior value and link retained; unchanged re-render writes nothing)",

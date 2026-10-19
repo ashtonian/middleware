@@ -1,5 +1,6 @@
 3a0cf2e77a53d8ac85982a6b67d089d58f8bea9e5e0586cae579d041cbc2c829  /work/linux-image-truenas-production-amd64_6.18.55-production+truenas-1_amd64.deb
 f53a0de1cea2a68f02324345cc1d66b2599fd51667942f8f0e111beef5ba8350  /work/u4/guest-unsupported/boot/vmlinuz-6.18.55-production+truenas
-81a6a4dd122bc4ca5ffc1a9a0773fa91487f2591eeb29b3880d88080a7319ee9  /work/u4/guest-unsupported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet.ko
+3792fe1008103a5c7c722e6684ef23c9f8d602846030eb4d58ea4b89f17ccfe3  /work/u4/guest-unsupported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet.ko
 d3ce2eab79e755cd24e727fb86a8e14b6ac01470b02777a935110b1dabdf522d  /work/u4/guest-unsupported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet-tcp.ko
-e6bcce9d42df2815db0a4dee28fce8dd4b63b58ac875ee0378b19b3d5ef277d1  /work/u4/results/unsupported/initramfs.gz
+b04a79860c49d4d0943ae805f787ec114aa7ea969caf80e51bcacb15aec4b5fd  /work/u4/guest-unsupported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet-rdma.ko
+abcb933bb53ac4e56d1af2ec25a0a92f191a49ddc5986eaa99d37642828f8cd3  /work/u4/results/unsupported/initramfs.gz

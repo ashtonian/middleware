@@ -1,12 +1,17 @@
+import importlib.util
+import os
 import pathlib
 
 import pytest
 
-from middlewared.service_exception import CallError
+from middlewared.alert.source.nvmet import NVMetPortTransferSizeUnsupportedAlert
+from middlewared.pytest.unit.middleware import Middleware
 from middlewared.utils.nvmet import kernel
-from middlewared.utils.nvmet.kernel import NvmetPortConfig, mdts_exponent, port_mdts_supported
+from middlewared.utils.nvmet.kernel import NvmetPortConfig, NvmetPortSubsysConfig, mdts_exponent, port_mdts_supported
+from middlewared.utils.python import get_middlewared_dir
 
 RENDER_CTX = {"failover.node": "MANUAL"}
+SUBNQN = "nqn.2011-06.com.truenas:uuid:00000000-0000-4000-8000-000000000000:sub1"
 
 
 def port_entry(max_data_transfer_size):
@@ -70,7 +75,7 @@ def test_mdts_exponent_rejects_unrepresentable(size):
     ],
 )
 def test_map_attrs(size, param_mdts):
-    assert NvmetPortConfig().map_attrs(port_entry(size), RENDER_CTX)["param_mdts"] == param_mdts
+    assert NvmetPortConfig({}).map_attrs(port_entry(size), RENDER_CTX)["param_mdts"] == param_mdts
 
 
 @pytest.mark.parametrize(
@@ -87,7 +92,7 @@ def test_map_attrs(size, param_mdts):
 def test_update_writes_limit(tmp_path, live, size, expected):
     path = live_port(tmp_path / "1", live)
 
-    NvmetPortConfig().update_attrs(path, port_entry(size), RENDER_CTX)
+    NvmetPortConfig({}).update_attrs(path, port_entry(size), RENDER_CTX)
 
     assert (path / "param_mdts").read_text() == f"{expected}\n"
 
@@ -98,34 +103,74 @@ def test_update_skips_unchanged_limit(tmp_path, monkeypatch):
     monkeypatch.setattr(pathlib.Path, "write_text", lambda self, *args, **kwargs: written.append(self.name))
 
     # An enabled port rejects attribute writes, so an unchanged limit must not be written.
-    NvmetPortConfig().update_attrs(path, port_entry(262144), RENDER_CTX)
+    NvmetPortConfig({}).update_attrs(path, port_entry(262144), RENDER_CTX)
 
     assert written == []
 
 
 @pytest.mark.parametrize("method", ["update", "create"])
-def test_unsupported_kernel_without_limit(tmp_path, method):
+@pytest.mark.parametrize("size, unserved", [(None, {}), (262144, {"1": "192.0.2.1:4420"})])
+def test_unsupported_kernel(tmp_path, method, size, unserved):
     path = live_port(tmp_path / "1", None)
+    config = NvmetPortConfig({})
 
     if method == "update":
-        NvmetPortConfig().update_attrs(path, port_entry(None), RENDER_CTX)
+        config.update_attrs(path, port_entry(size), RENDER_CTX)
     else:
-        NvmetPortConfig().set_attrs(path, port_entry(None), 0, RENDER_CTX)
+        config.set_attrs(path, port_entry(size), 0, RENDER_CTX)
 
+    # The port is still configured, but a limit it cannot apply keeps it from being served.
     assert not (path / "param_mdts").exists()
+    assert config.unserved == unserved
 
 
-@pytest.mark.parametrize("method", ["update", "create"])
-def test_unsupported_kernel_with_limit(tmp_path, method):
-    path = live_port(tmp_path / "1", None)
+def test_unserved_port_gets_no_subsystems(tmp_path, monkeypatch):
+    root = tmp_path / "nvmet"
+    monkeypatch.setattr(kernel, "NVMET_KERNEL_CONFIG_DIR", str(root))
+    (root / "subsystems" / SUBNQN).mkdir(parents=True)
+    for index in ("1", "2"):
+        (root / "ports" / index / "subsystems").mkdir(parents=True)
+    # Port 2 serves the subsystem from an earlier configuration.
+    (root / "ports" / "2" / "subsystems" / SUBNQN).symlink_to(root / "subsystems" / SUBNQN)
+    subsys = {"id": 1, "subnqn": SUBNQN, "ana": None}
+    render_ctx = {
+        "failover.status": "SINGLE",
+        "nvmet.global.ana_enabled": False,
+        "nvmet.global.rdma_enabled": False,
+        "nvmet.port_subsys.query": [
+            {"id": index, "port": port_entry(None) | {"id": index, "index": index}, "subsys": subsys}
+            for index in (1, 2)
+        ],
+    }
 
-    with pytest.raises(CallError, match="port 1: the running kernel does not support max_data_transfer_size"):
-        if method == "update":
-            NvmetPortConfig().update_attrs(path, port_entry(262144), RENDER_CTX)
-        else:
-            NvmetPortConfig().set_attrs(path, port_entry(262144), 0, RENDER_CTX)
+    with NvmetPortSubsysConfig({"2": "192.0.2.1:4421"}).render(render_ctx):
+        pass
 
-    assert not (path / "param_mdts").exists()
+    assert (root / "ports" / "1" / "subsystems" / SUBNQN).is_symlink()
+    assert not (root / "ports" / "2" / "subsystems" / SUBNQN).exists()
+
+
+@pytest.mark.parametrize("unserved", [[], ["192.0.2.1:4420", "192.0.2.1:4421"]])
+def test_render_reports_unserved_ports(monkeypatch, unserved):
+    spec = importlib.util.spec_from_file_location(
+        "nvmet_kernel", os.path.join(get_middlewared_dir(), "etc_files", "nvmet_kernel.py")
+    )
+    renderer = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(renderer)
+    monkeypatch.setattr(renderer, "write_config", lambda render_ctx: unserved)
+    middleware = Middleware()
+    alert = middleware.services.alert
+
+    renderer.render(None, middleware, {})
+
+    if unserved:
+        alert.oneshot_create.assert_called_once_with(
+            NVMetPortTransferSizeUnsupportedAlert(ports="192.0.2.1:4420, 192.0.2.1:4421")
+        )
+        alert.oneshot_delete.assert_not_called()
+    else:
+        alert.oneshot_delete.assert_called_once_with("NVMetPortTransferSizeUnsupported", None)
+        alert.oneshot_create.assert_not_called()
 
 
 @pytest.mark.parametrize(

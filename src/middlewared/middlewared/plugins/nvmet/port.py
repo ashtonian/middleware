@@ -330,8 +330,8 @@ class NVMetPortService(CRUDService):
         elif not (await self.middleware.call('nvmet.global.config'))['kernel']:
             verrors.add(attribute, 'Maximum data transfer size is not supported by the SPDK NVMe target.')
         elif await self.middleware.run_in_thread(port_mdts_supported) is False:
-            # When this cannot be determined yet, rendering refuses to link
-            # subsystems to a port whose limit cannot be applied.
+            # When this cannot be determined yet, the renderer leaves a port whose
+            # limit cannot be applied without subsystems and raises an alert.
             verrors.add(attribute, 'The running kernel NVMe target does not support a maximum data transfer size.')
 
     @api_method(NVMetPortTransportAddressChoicesArgs, NVMetPortTransportAddressChoicesResult)

@@ -237,6 +237,8 @@ NVDIMMMemoryModLifetimeWarning              class   .   .   .   Y   Y   .   Y
 NVDIMMMemoryModLifetimeWarning              listed  .   .   .   Y   Y   .   Y
 NVDIMMRecommendedFirmwareVersion            class   .   .   .   Y   Y   .   Y
 NVDIMMRecommendedFirmwareVersion            listed  .   .   .   Y   Y   .   Y
+NVMetPortTransferSizeUnsupported            class   Y   Y   Y   Y   Y   Y   Y
+NVMetPortTransferSizeUnsupported            listed  Y   Y   Y   Y   Y   Y   Y
 NetworkCardsMismatchOnActiveNode            class   .   .   .   Y   Y   .   Y
 NetworkCardsMismatchOnActiveNode            listed  .   .   .   .   .   .   Y
 NetworkCardsMismatchOnStandbyNode           class   .   .   .   Y   Y   .   Y

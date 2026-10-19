@@ -1,0 +1,27 @@
+/usr/lib/python3/dist-packages/pytest_asyncio/plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.3.5, pluggy-1.5.0 -- /usr/bin/python3
+rootdir: /work/src/middlewared
+configfile: pyproject.toml
+plugins: typeguard-4.4.2, pyfakefs-5.8.0, asyncio-0.25.1, dependency-0.5.1, rerunfailures-15.0, timeout-2.3.1
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
+collecting ... collected 33 items / 1 error
+
+==================================== ERRORS ====================================
+_ ERROR collecting middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py _
+ImportError while importing test module '/work/src/middlewared/middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py:7: in <module>
+    from middlewared.utils.nvmet.kernel import NvmetPortConfig, mdts_exponent, port_mdts_supported
+E   ImportError: cannot import name 'mdts_exponent' from 'middlewared.utils.nvmet.kernel' (/work/src/middlewared/middlewared/utils/nvmet/kernel.py)
+=========================== short test summary info ============================
+ERROR middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+========================= 6 warnings, 1 error in 4.77s =========================
+exit=2

@@ -1,0 +1,1281 @@
+/usr/lib/python3/dist-packages/pytest_asyncio/plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.3.5, pluggy-1.5.0 -- /usr/bin/python3
+rootdir: /work/src/middlewared
+configfile: pyproject.toml
+plugins: typeguard-4.4.2, pyfakefs-5.8.0, asyncio-0.25.1, dependency-0.5.1, rerunfailures-15.0, timeout-2.3.1
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
+collecting ... collected 33 items
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[None] FAILED [  3%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[16384] FAILED [  6%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[262144] FAILED [  9%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[1048576] FAILED [ 12%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[0] PASSED [ 15%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[4096] PASSED [ 18%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[8192] PASSED [ 21%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[1572864] PASSED [ 24%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[2097152] PASSED [ 27%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[True] PASSED [ 30%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_rejects_limit[262144] PASSED [ 33%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[None-True] FAILED [ 36%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[None-None] FAILED [ 39%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[16384-True] FAILED [ 42%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[16384-None] FAILED [ 45%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[1048576-True] FAILED [ 48%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[1048576-None] FAILED [ 51%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new0-True-True-Maximum data transfer size is only supported on TCP ports.] FAILED [ 54%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new1-True-True-Maximum data transfer size is only supported on TCP ports.] FAILED [ 57%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new2-False-None-Maximum data transfer size is not supported by the SPDK NVMe target.] FAILED [ 60%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new3-True-False-The running kernel NVMe target does not support a maximum data transfer size.] FAILED [ 63%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[True-False-old0-new0] FAILED [ 66%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[True-False-old1-new1] FAILED [ 69%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[False-None-old0-new0] FAILED [ 72%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[False-None-old1-new1] FAILED [ 75%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected[None-262144] FAILED [ 78%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected[262144-1048576] FAILED [ 81%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected[262144-None] FAILED [ 84%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected_when_disabling FAILED [ 87%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_inactive_port_limit_change_allowed[False-True] FAILED [ 90%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_inactive_port_limit_change_allowed[True-False] FAILED [ 93%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_spdk_switch_rejected_while_ports_have_limit FAILED [ 96%]
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_spdk_switch_allowed_without_limits PASSED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_schema_accepts_limit[None] ________________________
+
+size = None
+
+    @pytest.mark.parametrize("size", [None, 16384, 262144, 1048576])
+    def test_schema_accepts_limit(size):
+>       args = NVMetPortCreateArgs(
+            nvmet_port_create={
+                "addr_trtype": "TCP",
+                "addr_traddr": "192.0.2.1",
+                "max_data_transfer_size": size,
+            }
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for NVMetPortCreateArgs
+E       nvmet_port_create.TCP.max_data_transfer_size
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=None, input_type=NoneType]
+E           For further information visit https://errors.pydantic.dev/2.10/v/extra_forbidden
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:37: ValidationError
+_______________________ test_schema_accepts_limit[16384] _______________________
+
+size = 16384
+
+    @pytest.mark.parametrize("size", [None, 16384, 262144, 1048576])
+    def test_schema_accepts_limit(size):
+>       args = NVMetPortCreateArgs(
+            nvmet_port_create={
+                "addr_trtype": "TCP",
+                "addr_traddr": "192.0.2.1",
+                "max_data_transfer_size": size,
+            }
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for NVMetPortCreateArgs
+E       nvmet_port_create.TCP.max_data_transfer_size
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=16384, input_type=int]
+E           For further information visit https://errors.pydantic.dev/2.10/v/extra_forbidden
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:37: ValidationError
+______________________ test_schema_accepts_limit[262144] _______________________
+
+size = 262144
+
+    @pytest.mark.parametrize("size", [None, 16384, 262144, 1048576])
+    def test_schema_accepts_limit(size):
+>       args = NVMetPortCreateArgs(
+            nvmet_port_create={
+                "addr_trtype": "TCP",
+                "addr_traddr": "192.0.2.1",
+                "max_data_transfer_size": size,
+            }
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for NVMetPortCreateArgs
+E       nvmet_port_create.TCP.max_data_transfer_size
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=262144, input_type=int]
+E           For further information visit https://errors.pydantic.dev/2.10/v/extra_forbidden
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:37: ValidationError
+______________________ test_schema_accepts_limit[1048576] ______________________
+
+size = 1048576
+
+    @pytest.mark.parametrize("size", [None, 16384, 262144, 1048576])
+    def test_schema_accepts_limit(size):
+>       args = NVMetPortCreateArgs(
+            nvmet_port_create={
+                "addr_trtype": "TCP",
+                "addr_traddr": "192.0.2.1",
+                "max_data_transfer_size": size,
+            }
+        )
+E       pydantic_core._pydantic_core.ValidationError: 1 validation error for NVMetPortCreateArgs
+E       nvmet_port_create.TCP.max_data_transfer_size
+E         Extra inputs are not permitted [type=extra_forbidden, input_value=1048576, input_type=int]
+E           For further information visit https://errors.pydantic.dev/2.10/v/extra_forbidden
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:37: ValidationError
+________________ test_tcp_kernel_port_accepts_limit[None-True] _________________
+
+size = None, mdts_supported = True
+
+    @pytest.mark.parametrize("mdts_supported", [True, None])
+    @pytest.mark.parametrize("size", [None, 16384, 1048576])
+    @pytest.mark.asyncio
+    async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+>       errors = await validate_port_update(
+            port_middleware(),
+            port_entry(),
+            port_entry(max_data_transfer_size=size),
+            mdts_supported,
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff245cd70>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+________________ test_tcp_kernel_port_accepts_limit[None-None] _________________
+
+size = None, mdts_supported = None
+
+    @pytest.mark.parametrize("mdts_supported", [True, None])
+    @pytest.mark.parametrize("size", [None, 16384, 1048576])
+    @pytest.mark.asyncio
+    async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+>       errors = await validate_port_update(
+            port_middleware(),
+            port_entry(),
+            port_entry(max_data_transfer_size=size),
+            mdts_supported,
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffffbc5b750>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+________________ test_tcp_kernel_port_accepts_limit[16384-True] ________________
+
+size = 16384, mdts_supported = True
+
+    @pytest.mark.parametrize("mdts_supported", [True, None])
+    @pytest.mark.parametrize("size", [None, 16384, 1048576])
+    @pytest.mark.asyncio
+    async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+>       errors = await validate_port_update(
+            port_middleware(),
+            port_entry(),
+            port_entry(max_data_transfer_size=size),
+            mdts_supported,
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffffbc5b4d0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+________________ test_tcp_kernel_port_accepts_limit[16384-None] ________________
+
+size = 16384, mdts_supported = None
+
+    @pytest.mark.parametrize("mdts_supported", [True, None])
+    @pytest.mark.parametrize("size", [None, 16384, 1048576])
+    @pytest.mark.asyncio
+    async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+>       errors = await validate_port_update(
+            port_middleware(),
+            port_entry(),
+            port_entry(max_data_transfer_size=size),
+            mdts_supported,
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff23c7bb0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_______________ test_tcp_kernel_port_accepts_limit[1048576-True] _______________
+
+size = 1048576, mdts_supported = True
+
+    @pytest.mark.parametrize("mdts_supported", [True, None])
+    @pytest.mark.parametrize("size", [None, 16384, 1048576])
+    @pytest.mark.asyncio
+    async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+>       errors = await validate_port_update(
+            port_middleware(),
+            port_entry(),
+            port_entry(max_data_transfer_size=size),
+            mdts_supported,
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2498180>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_______________ test_tcp_kernel_port_accepts_limit[1048576-None] _______________
+
+size = 1048576, mdts_supported = None
+
+    @pytest.mark.parametrize("mdts_supported", [True, None])
+    @pytest.mark.parametrize("size", [None, 16384, 1048576])
+    @pytest.mark.asyncio
+    async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+>       errors = await validate_port_update(
+            port_middleware(),
+            port_entry(),
+            port_entry(max_data_transfer_size=size),
+            mdts_supported,
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2429010>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_ test_unsupported_limit_rejected[new0-True-True-Maximum data transfer size is only supported on TCP ports.] _
+
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'RDMA', ...}
+kernel = True, mdts_supported = True
+message = 'Maximum data transfer size is only supported on TCP ports.'
+
+    @pytest.mark.parametrize(
+        "new, kernel, mdts_supported, message",
+        [
+            (
+                port_entry(addr_trtype="RDMA", max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(addr_trtype="FC", addr_trsvcid=None, max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                False,
+                None,
+                "Maximum data transfer size is not supported by the SPDK NVMe target.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                True,
+                False,
+                "The running kernel NVMe target does not support a maximum data transfer size.",
+            ),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_unsupported_limit_rejected(new, kernel, mdts_supported, message):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), port_entry(), new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff242f8a0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_ test_unsupported_limit_rejected[new1-True-True-Maximum data transfer size is only supported on TCP ports.] _
+
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': None, 'addr_trtype': 'FC', ...}
+kernel = True, mdts_supported = True
+message = 'Maximum data transfer size is only supported on TCP ports.'
+
+    @pytest.mark.parametrize(
+        "new, kernel, mdts_supported, message",
+        [
+            (
+                port_entry(addr_trtype="RDMA", max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(addr_trtype="FC", addr_trsvcid=None, max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                False,
+                None,
+                "Maximum data transfer size is not supported by the SPDK NVMe target.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                True,
+                False,
+                "The running kernel NVMe target does not support a maximum data transfer size.",
+            ),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_unsupported_limit_rejected(new, kernel, mdts_supported, message):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), port_entry(), new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff22e0380>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_ test_unsupported_limit_rejected[new2-False-None-Maximum data transfer size is not supported by the SPDK NVMe target.] _
+
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'TCP', ...}
+kernel = False, mdts_supported = None
+message = 'Maximum data transfer size is not supported by the SPDK NVMe target.'
+
+    @pytest.mark.parametrize(
+        "new, kernel, mdts_supported, message",
+        [
+            (
+                port_entry(addr_trtype="RDMA", max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(addr_trtype="FC", addr_trsvcid=None, max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                False,
+                None,
+                "Maximum data transfer size is not supported by the SPDK NVMe target.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                True,
+                False,
+                "The running kernel NVMe target does not support a maximum data transfer size.",
+            ),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_unsupported_limit_rejected(new, kernel, mdts_supported, message):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), port_entry(), new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff77df350>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_ test_unsupported_limit_rejected[new3-True-False-The running kernel NVMe target does not support a maximum data transfer size.] _
+
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'TCP', ...}
+kernel = True, mdts_supported = False
+message = 'The running kernel NVMe target does not support a maximum data transfer size.'
+
+    @pytest.mark.parametrize(
+        "new, kernel, mdts_supported, message",
+        [
+            (
+                port_entry(addr_trtype="RDMA", max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(addr_trtype="FC", addr_trsvcid=None, max_data_transfer_size=262144),
+                True,
+                True,
+                "Maximum data transfer size is only supported on TCP ports.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                False,
+                None,
+                "Maximum data transfer size is not supported by the SPDK NVMe target.",
+            ),
+            (
+                port_entry(max_data_transfer_size=262144),
+                True,
+                False,
+                "The running kernel NVMe target does not support a maximum data transfer size.",
+            ),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_unsupported_limit_rejected(new, kernel, mdts_supported, message):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), port_entry(), new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff77dd450>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+____________ test_null_limit_needs_no_support[True-False-old0-new0] ____________
+
+old = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'RDMA', ...}
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'RDMA', ...}
+kernel = True, mdts_supported = False
+
+    @pytest.mark.parametrize(
+        "old, new",
+        [
+            # Legacy ports keep working whatever the backend or kernel supports.
+            (port_entry(addr_trtype="RDMA"), port_entry(addr_trtype="RDMA", max_queue_size=128)),
+            (port_entry(), port_entry(max_queue_size=128)),
+        ],
+    )
+    @pytest.mark.parametrize("kernel, mdts_supported", [(True, False), (False, None)])
+    @pytest.mark.asyncio
+    async def test_null_limit_needs_no_support(old, new, kernel, mdts_supported):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), old, new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff77da300>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+____________ test_null_limit_needs_no_support[True-False-old1-new1] ____________
+
+old = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'TCP', ...}
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'TCP', ...}
+kernel = True, mdts_supported = False
+
+    @pytest.mark.parametrize(
+        "old, new",
+        [
+            # Legacy ports keep working whatever the backend or kernel supports.
+            (port_entry(addr_trtype="RDMA"), port_entry(addr_trtype="RDMA", max_queue_size=128)),
+            (port_entry(), port_entry(max_queue_size=128)),
+        ],
+    )
+    @pytest.mark.parametrize("kernel, mdts_supported", [(True, False), (False, None)])
+    @pytest.mark.asyncio
+    async def test_null_limit_needs_no_support(old, new, kernel, mdts_supported):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), old, new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff22d45f0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+____________ test_null_limit_needs_no_support[False-None-old0-new0] ____________
+
+old = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'RDMA', ...}
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'RDMA', ...}
+kernel = False, mdts_supported = None
+
+    @pytest.mark.parametrize(
+        "old, new",
+        [
+            # Legacy ports keep working whatever the backend or kernel supports.
+            (port_entry(addr_trtype="RDMA"), port_entry(addr_trtype="RDMA", max_queue_size=128)),
+            (port_entry(), port_entry(max_queue_size=128)),
+        ],
+    )
+    @pytest.mark.parametrize("kernel, mdts_supported", [(True, False), (False, None)])
+    @pytest.mark.asyncio
+    async def test_null_limit_needs_no_support(old, new, kernel, mdts_supported):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), old, new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff22da350>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+____________ test_null_limit_needs_no_support[False-None-old1-new1] ____________
+
+old = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'TCP', ...}
+new = {'addr_adrfam': 'IPV4', 'addr_traddr': '192.0.2.1', 'addr_trsvcid': 4420, 'addr_trtype': 'TCP', ...}
+kernel = False, mdts_supported = None
+
+    @pytest.mark.parametrize(
+        "old, new",
+        [
+            # Legacy ports keep working whatever the backend or kernel supports.
+            (port_entry(addr_trtype="RDMA"), port_entry(addr_trtype="RDMA", max_queue_size=128)),
+            (port_entry(), port_entry(max_queue_size=128)),
+        ],
+    )
+    @pytest.mark.parametrize("kernel, mdts_supported", [(True, False), (False, None)])
+    @pytest.mark.asyncio
+    async def test_null_limit_needs_no_support(old, new, kernel, mdts_supported):
+>       errors = await validate_port_update(port_middleware(kernel=kernel), old, new, mdts_supported)
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff22e8130>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_____________ test_active_port_limit_change_rejected[None-262144] ______________
+
+old_size = None, new_size = 262144
+
+    @pytest.mark.parametrize(
+        "old_size, new_size",
+        [
+            (None, 262144),
+            (262144, 1048576),
+            (262144, None),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_active_port_limit_change_rejected(old_size, new_size):
+>       errors = await validate_port_update(
+            port_middleware(port_subsys=1),
+            port_entry(max_data_transfer_size=old_size),
+            port_entry(max_data_transfer_size=new_size),
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2300ae0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+____________ test_active_port_limit_change_rejected[262144-1048576] ____________
+
+old_size = 262144, new_size = 1048576
+
+    @pytest.mark.parametrize(
+        "old_size, new_size",
+        [
+            (None, 262144),
+            (262144, 1048576),
+            (262144, None),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_active_port_limit_change_rejected(old_size, new_size):
+>       errors = await validate_port_update(
+            port_middleware(port_subsys=1),
+            port_entry(max_data_transfer_size=old_size),
+            port_entry(max_data_transfer_size=new_size),
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2c53c50>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_____________ test_active_port_limit_change_rejected[262144-None] ______________
+
+old_size = 262144, new_size = None
+
+    @pytest.mark.parametrize(
+        "old_size, new_size",
+        [
+            (None, 262144),
+            (262144, 1048576),
+            (262144, None),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_active_port_limit_change_rejected(old_size, new_size):
+>       errors = await validate_port_update(
+            port_middleware(port_subsys=1),
+            port_entry(max_data_transfer_size=old_size),
+            port_entry(max_data_transfer_size=new_size),
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2454890>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+____________ test_active_port_limit_change_rejected_when_disabling _____________
+
+    @pytest.mark.asyncio
+    async def test_active_port_limit_change_rejected_when_disabling():
+>       errors = await validate_port_update(
+            port_middleware(port_subsys=1),
+            port_entry(),
+            port_entry(enabled=False, max_data_transfer_size=262144),
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff24553d0>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_____________ test_inactive_port_limit_change_allowed[False-True] ______________
+
+enabled = False, running = True
+
+    @pytest.mark.parametrize("enabled, running", [(False, True), (True, False)])
+    @pytest.mark.asyncio
+    async def test_inactive_port_limit_change_allowed(enabled, running):
+>       errors = await validate_port_update(
+            port_middleware(running=running, port_subsys=1),
+            port_entry(enabled=enabled),
+            port_entry(enabled=True, max_data_transfer_size=262144),
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2455c10>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_____________ test_inactive_port_limit_change_allowed[True-False] ______________
+
+enabled = True, running = False
+
+    @pytest.mark.parametrize("enabled, running", [(False, True), (True, False)])
+    @pytest.mark.asyncio
+    async def test_inactive_port_limit_change_allowed(enabled, running):
+>       errors = await validate_port_update(
+            port_middleware(running=running, port_subsys=1),
+            port_entry(enabled=enabled),
+            port_entry(enabled=True, max_data_transfer_size=262144),
+        )
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:75: in validate_port_update
+    with patch("middlewared.plugins.nvmet.port.port_mdts_supported", return_value=mdts_supported):
+/usr/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <unittest.mock._patch object at 0x7ffff2455010>
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+>           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: <module 'middlewared.plugins.nvmet.port' from '/work/src/middlewared/middlewared/plugins/nvmet/port.py'> does not have the attribute 'port_mdts_supported'
+
+/usr/lib/python3.13/unittest/mock.py:1467: AttributeError
+_______________ test_spdk_switch_rejected_while_ports_have_limit _______________
+
+    @pytest.mark.asyncio
+    async def test_spdk_switch_rejected_while_ports_have_limit():
+        errors = await validate_backend_switch(
+            global_middleware(
+                [
+                    {"index": 1, "max_data_transfer_size": 262144},
+                    {"index": 2, "max_data_transfer_size": None},
+                    {"index": 3, "max_data_transfer_size": 1048576},
+                ]
+            )
+        )
+    
+>       assert errors == [
+            (
+                "nvmet_global_update.kernel",
+                "SPDK does not support a maximum data transfer size.  Clear it on port(s) #1, #3 first.",
+            )
+        ]
+E       AssertionError: assert [] == [('nvmet_glob..., #3 first.')]
+E         
+E         Right contains one more item: ('nvmet_global_update.kernel', 'SPDK does not support a maximum data transfer size.  Clear it on port(s) #1, #3 first.')
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     (...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to show
+
+middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py:230: AssertionError
+=========================== short test summary info ============================
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[None]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[16384]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[262144]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_schema_accepts_limit[1048576]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[None-True]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[None-None]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[16384-True]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[16384-None]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[1048576-True]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_tcp_kernel_port_accepts_limit[1048576-None]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new0-True-True-Maximum data transfer size is only supported on TCP ports.]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new1-True-True-Maximum data transfer size is only supported on TCP ports.]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new2-False-None-Maximum data transfer size is not supported by the SPDK NVMe target.]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_unsupported_limit_rejected[new3-True-False-The running kernel NVMe target does not support a maximum data transfer size.]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[True-False-old0-new0]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[True-False-old1-new1]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[False-None-old0-new0]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_null_limit_needs_no_support[False-None-old1-new1]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected[None-262144]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected[262144-1048576]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected[262144-None]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_active_port_limit_change_rejected_when_disabling
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_inactive_port_limit_change_allowed[False-True]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_inactive_port_limit_change_allowed[True-False]
+FAILED middlewared/pytest/unit/plugins/test_nvmet_port_mdts.py::test_spdk_switch_rejected_while_ports_have_limit
+=================== 25 failed, 8 passed, 6 warnings in 7.02s ===================
+exit=1

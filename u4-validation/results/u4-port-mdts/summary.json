@@ -1,0 +1,263 @@
+{
+  "recorded_at_utc": "2026-10-19T00:49:11Z",
+  "repository": "truenas/middleware",
+  "base": {
+    "ref": "master",
+    "sha": "005a49652558e7f0107f318f8ae71ed6d074f59b",
+    "api": "v28_0_0",
+    "alembic_head": "d5e404a65f70"
+  },
+  "candidate": {
+    "branch": "ashtonian:work/u4-port-transfer-limit",
+    "sha": "4d1a00b562c0445a0993450817382422bb397a7a",
+    "tree": "9cccfb900d597527d0a35e4d5eeae08d71d8f934",
+    "signature": {
+      "local": "good (RSA F6636B543217293818FDAE098D8E2EDE4DB48014)",
+      "github": "verified, reason valid"
+    },
+    "alembic_head": "d5b7b7c0dc05"
+  },
+  "environment": {
+    "container": "nvmeof-u4-local-20261018-a (network none, private volume, no host mounts)",
+    "image": "ghcr.io/truenas/middleware@sha256:a4b6c416c8414028e5a48781aee981b9485bd56aa81c9d613c2c6d3180013091",
+    "image_os": "TrueNAS 28.0.0-MASTER+20261018-195528, linux/amd64 emulated on arm64 (OrbStack)",
+    "python": "3.13.5",
+    "pytest": "8.3.5",
+    "ruff": "0.17.1"
+  },
+  "results": {
+    "new_unit_tests": {
+      "log": "new-tests.log",
+      "result": "58 passed"
+    },
+    "negative_control_master_sources": {
+      "plugin_tests": {
+        "log": "negative-control-plugin.log",
+        "result": "25 failed, 8 passed (schema rejections and the no-limit SPDK switch also pass on master)"
+      },
+      "renderer_tests": {
+        "log": "negative-control-renderer-and-plugin.log",
+        "result": "collection error: mdts_exponent absent"
+      }
+    },
+    "full_unit_suite": {
+      "command": "PYTHONPATH=. FAKE_ENV=1 pytest-3 middlewared/pytest (CI unittests.yml)",
+      "log": "unit-full.log",
+      "result": "3200 passed, 16 failed, 4 skipped",
+      "failures": "16 in plugins/vm/test_state_utils.py and plugins/test_truenas_s3_on_disk.py; all ENOSYS (errno 38) from openat2/renameat2 under emulated amd64; modules untouched by U4"
+    },
+    "docs_changelog_tests": {
+      "log": "docs-tests.log",
+      "result": "31 passed"
+    },
+    "ruff": {
+      "log": "ruff.log",
+      "result": "ruff check src/middlewared and src/middlewared_docs pass; new files already formatted"
+    },
+    "migration": {
+      "log": "migration.log",
+      "procedure": "initial.sql, alembic upgrade d5e404a65f70, insert legacy port row, upgrade head, downgrade d5e404a65f70, upgrade head (debian/rules procedure)",
+      "result": "single head d5b7b7c0dc05; nullable column added with existing row NULL; downgrade drops column and preserves row"
+    },
+    "guest_renderer": {
+      "harness": "u4-runtime scripts (README.md)",
+      "scope": "Unmodified U4 utils/nvmet/kernel.py, render_common.py and constants.py against real nvmet configfs in the disposable TCG guest; middleware daemon, datastore, CRUD validation and etc.generate not running; Python 3.10 guest; CallError and zvol_name_to_path stubbed",
+      "kernel_image": {
+        "package_sha256": "3a0cf2e77a53d8ac85982a6b67d089d58f8bea9e5e0586cae579d041cbc2c829",
+        "vmlinuz_sha256": "f53a0de1cea2a68f02324345cc1d66b2599fd51667942f8f0e111beef5ba8350",
+        "note": "U3-qualified production package; matches u3-validation/qualification/packages.json at https://github.com/ashtonian/linux/tree/f5098048f7ca7d3fb672478b1b301aa368756509/u3-validation"
+      },
+      "supported": {
+        "modules": "packaged candidate nvmet/nvmet-tcp (9d9d9d7)",
+        "result": "PASS, 11 records",
+        "records": [
+          {
+            "test": "environment",
+            "status": "PASS",
+            "expect": "supported",
+            "kernel": "6.18.55-production+truenas",
+            "renderer_sha256": "e96b35c9a7dbef7b64c0476e7b40692bf2e9a8292ebaaaaab30e1d66d21a1ab1"
+          },
+          {
+            "test": "capability_unknown_without_ports",
+            "status": "PASS"
+          },
+          {
+            "test": "port_attributes",
+            "status": "PASS",
+            "attrs": [
+              "addr_adrfam",
+              "addr_traddr",
+              "addr_treq",
+              "addr_trsvcid",
+              "addr_trtype",
+              "addr_tsas",
+              "param_inline_data_size",
+              "param_max_queue_size",
+              "param_mdts",
+              "param_pi_enable"
+            ]
+          },
+          {
+            "test": "limit_written_before_link",
+            "status": "PASS",
+            "param_mdts": 6,
+            "mdts": 6,
+            "max_hw_sectors_kb": 256,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "unchanged_rerender_on_enabled_port",
+            "status": "PASS",
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "kernel_rejects_change_on_enabled_port",
+            "status": "PASS",
+            "error": "[Errno 13] Permission denied",
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "disable_change_enable",
+            "status": "PASS",
+            "requested": 1048576,
+            "param_mdts": 8,
+            "mdts": 8,
+            "max_hw_sectors_kb": 1024,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "disable_change_enable",
+            "status": "PASS",
+            "requested": null,
+            "param_mdts": 0,
+            "mdts": 8,
+            "max_hw_sectors_kb": 1024,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "ana_derived_port_receives_limit",
+            "status": "PASS",
+            "port_index": 5001,
+            "param_mdts": 6,
+            "mdts": 6,
+            "max_hw_sectors_kb": 256,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "teardown",
+            "status": "PASS"
+          },
+          {
+            "test": "complete",
+            "status": "PASS"
+          }
+        ]
+      },
+      "unsupported": {
+        "modules": "nvmet/nvmet-tcp rebuilt from base e43b652 against the production tree, signed with its build key (loaded as out-of-tree, signature verified)",
+        "result": "PASS, 8 records",
+        "records": [
+          {
+            "test": "environment",
+            "status": "PASS",
+            "expect": "unsupported",
+            "kernel": "6.18.55-production+truenas",
+            "renderer_sha256": "e96b35c9a7dbef7b64c0476e7b40692bf2e9a8292ebaaaaab30e1d66d21a1ab1"
+          },
+          {
+            "test": "capability_unknown_without_ports",
+            "status": "PASS"
+          },
+          {
+            "test": "port_attributes",
+            "status": "PASS",
+            "attrs": [
+              "addr_adrfam",
+              "addr_traddr",
+              "addr_treq",
+              "addr_trsvcid",
+              "addr_trtype",
+              "addr_tsas",
+              "param_inline_data_size",
+              "param_max_queue_size",
+              "param_pi_enable"
+            ]
+          },
+          {
+            "test": "legacy_null_port_serves",
+            "status": "PASS",
+            "param_mdts_attribute": false,
+            "mdts": 0,
+            "max_hw_sectors_kb": 2147483644,
+            "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "limit_fails_closed_before_link",
+            "status": "PASS",
+            "error": "[95] NVMe target port 2: the running kernel does not support max_data_transfer_size",
+            "port2_linked": false,
+            "io_sha256_port1": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "cleared_limit_links_port",
+            "status": "PASS",
+            "io_sha256_port2": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+          },
+          {
+            "test": "teardown",
+            "status": "PASS"
+          },
+          {
+            "test": "complete",
+            "status": "PASS"
+          }
+        ]
+      },
+      "rejected_baseline": "Debian trixie 6.12.113 lacks the namespace resv_enable attribute that middleware master writes on every namespace, so it cannot run the current renderer independent of U4; replaced by base modules on the qualified kernel",
+      "harness_iteration": "First unsupported run failed in the harness: with native multipath a second controller to the same subsystem joins the existing namespace head; the fix disconnects port 1 before checking port 2. Both final runs used identical guest files."
+    }
+  },
+  "not_run": [
+    "tests/sharing_protocols/nvmet/test_nvmet_tcp.py::test__port_max_data_transfer_size (needs TrueNAS with truenas/linux#373 kernel)",
+    "existing NVMe-oF integration suites, HA failover, configuration upload, import-linter (no network in container), mypy (nvmet paths excluded upstream)",
+    "live Identify/command traces on appliance hardware (guest Identify ran in the disposable TCG lab only)"
+  ],
+  "files_sha256": {
+    "docs-tests.log": "b7930af63100e6773c338e492382e98f1364bc1e1ce42da438154ee426f3517f",
+    "migration.log": "17ce2a467fc18f7785bd060810d27f42435c3b3835c8d82d1e830fcb83e5ae4b",
+    "negative-control-plugin.log": "f7bad49dc092b0b8ea1e925739cd684d1c2700610e7ca4c26727e18ae64935fa",
+    "negative-control-renderer-and-plugin.log": "970df35a561dc6d23dc9c183fb4c5d5c4a1f028d7014b38a922edfa431587609",
+    "new-tests.log": "cfccf83432ba75b09b6c55ecaa2ed309a5775ad1a257eecaa7c3ba8321e2e1ec",
+    "ruff.log": "788d85c8ae3e3d2a297fe9ddedb3a19a61481b4b5ae98f6e2ad8ef24a9b83ffb",
+    "runtime/base-modules.txt": "65603ecc83404f6e4e7ae929300088bf8bc308658820c6de0f7c534749253342",
+    "runtime/base-nvmet-build.log": "abb96d2deb9d28a10ee3132f4a8e153514c0342793f649b9c814b89167cd76df",
+    "runtime/base-src.sha256": "0a28829d9b492f99f5295e5dda2b08ea29206d2e7fbf705c536e50cc8922c452",
+    "runtime/candidate-src.sha256": "e98272bc9a3d0961aa47e248b8cd3d28d58d7f0cc3fe7e0645ed8b28d1da4d7a",
+    "runtime/supported/console.log": "fe903899886bcbc17b499b307cda65eee037921a67d66ffa760456728c940413",
+    "runtime/supported/guest-files.sha256": "bc339bf2aa17284f638096535af0f8bb4544d37ad3cf6445953b6eb96583e42d",
+    "runtime/supported/guest/checks.log": "9b390e1eb74e2ebe4236098a289d6ec396a05106e0b611865d97105c50658cf4",
+    "runtime/supported/guest/dmesg.log": "5e05b1ca634c3f427207a73cecde666401c821b1cac7094b89a419c61d553006",
+    "runtime/supported/guest/results.json": "bbe6ee33967e7674aec50b179559b47c8d714ae9f15d1db089f7eef2433df019",
+    "runtime/supported/inputs.sha256": "59e33770115342487e3a2c1110c586004873ab1687df19d532f83112da3beb4d",
+    "runtime/supported/qemu.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "runtime/supported/qemu.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime/unsupported/console.log": "fed0001c74320c0043cc86ad45b16be8cf5b682da9574e76cabb0d117c21aac0",
+    "runtime/unsupported/guest-files.sha256": "bc339bf2aa17284f638096535af0f8bb4544d37ad3cf6445953b6eb96583e42d",
+    "runtime/unsupported/guest/checks.log": "a2ced174e11c58b3be954cc3ce96a026134b63a20314d7cbbed4b3195a60b495",
+    "runtime/unsupported/guest/dmesg.log": "126785f50b28ac03a5a3f5891fe9ceb85f42b793f1387e88c406490935b5fe85",
+    "runtime/unsupported/guest/results.json": "20b7065a1e6e4b13df31a7a2b7387b783305794c6c7f9cabb4e491e21ff9f9bc",
+    "runtime/unsupported/inputs.sha256": "be2b40edba7d3d6849ba4678fcc6bf3060ba52f936945c575e834feac3461ade",
+    "runtime/unsupported/qemu.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "runtime/unsupported/qemu.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unit-full.log": "95458f13dd55cb90eab73f42f48ec12b77d96719fe9e198c475a782dad21fa49"
+  },
+  "scenario_mapping": {
+    "I03/C06 omitted or null setting, old rows": "PASS: unit (schema/validation), migration (existing row NULL), guest (null renders 0 on candidate, omitted on base kernel; legacy port serves)",
+    "I03/C06 valid setting": "PASS: guest Identify MDTS 6/8 and host max_hw_sectors_kb 256/1024 with 1 MiB direct I/O checksums",
+    "I03/C06 invalid setting": "PASS: unit (API schema rejects 0/4 KiB/8 KiB/1.5 MiB/2 MiB/bool/string)",
+    "I03/C06 unsupported setting": "PASS: unit (RDMA/FC/SPDK/running kernel without param_mdts rejected before mutation); guest (render raises EOPNOTSUPP before linking, other ports keep serving). When support is undeterminable at request time the rejection happens at render, not in the API call (PR-U4.md decision 3)",
+    "I03/C06 live-port change and failed reload preserving prior state": "PASS: unit (active-port rejection incl. combined disable); guest (kernel refuses changed value on an enabled port, prior value and link retained; unchanged re-render writes nothing)",
+    "I03/C06 restart, reboot, configuration export/import, HA failover, old-client API interoperability on an appliance": "NOT RUN"
+  }
+}

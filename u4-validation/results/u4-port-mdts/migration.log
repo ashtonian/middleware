@@ -1,0 +1,14 @@
+d5b7b7c0dc05 (head)
+base-upgrade-ok
+INFO  [alembic.runtime.migration] Running upgrade d5e404a65f70 -> d5b7b7c0dc05, NVMe-oF port maximum data transfer size
+10|nvmet_port_max_data_transfer_size|INTEGER|0||0
+id|nvmet_port_index|nvmet_port_max_queue_size|nvmet_port_max_data_transfer_size
+1|1|128|
+d5b7b7c0dc05 (head)
+INFO  [alembic.runtime.migration] Running downgrade d5b7b7c0dc05 -> d5e404a65f70, NVMe-oF port maximum data transfer size
+0
+id|nvmet_port_index|nvmet_port_max_queue_size
+1|1|128
+d5b7b7c0dc05 (head)
+
+[exited with code 0]

@@ -1,0 +1,5 @@
+3a0cf2e77a53d8ac85982a6b67d089d58f8bea9e5e0586cae579d041cbc2c829  /work/linux-image-truenas-production-amd64_6.18.55-production+truenas-1_amd64.deb
+f53a0de1cea2a68f02324345cc1d66b2599fd51667942f8f0e111beef5ba8350  /work/u4/guest-supported/boot/vmlinuz-6.18.55-production+truenas
+a712f05d5be2fb88879fa49b53269cfca7b92e87b2d34ba5b8c06fe2040d4531  /work/u4/guest-supported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet.ko
+d6242ad90e5818b5ae79ab5e92adbb3d3fad7b5d1605a10cc26015070aac4d00  /work/u4/guest-supported/usr/lib/modules/6.18.55-production+truenas/kernel/drivers/nvme/target/nvmet-tcp.ko
+b45670236cf1e667a505c91a960d3ea34e1106ff30beeb9a5b5fcee93ad62565  /work/u4/results/supported/initramfs.gz

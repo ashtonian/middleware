@@ -1,0 +1,83 @@
+[
+  {
+    "test": "environment",
+    "status": "PASS",
+    "expect": "supported",
+    "kernel": "6.18.55-production+truenas",
+    "renderer_sha256": "e96b35c9a7dbef7b64c0476e7b40692bf2e9a8292ebaaaaab30e1d66d21a1ab1"
+  },
+  {
+    "test": "capability_unknown_without_ports",
+    "status": "PASS"
+  },
+  {
+    "test": "port_attributes",
+    "status": "PASS",
+    "attrs": [
+      "addr_adrfam",
+      "addr_traddr",
+      "addr_treq",
+      "addr_trsvcid",
+      "addr_trtype",
+      "addr_tsas",
+      "param_inline_data_size",
+      "param_max_queue_size",
+      "param_mdts",
+      "param_pi_enable"
+    ]
+  },
+  {
+    "test": "limit_written_before_link",
+    "status": "PASS",
+    "param_mdts": 6,
+    "mdts": 6,
+    "max_hw_sectors_kb": 256,
+    "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+  },
+  {
+    "test": "unchanged_rerender_on_enabled_port",
+    "status": "PASS",
+    "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+  },
+  {
+    "test": "kernel_rejects_change_on_enabled_port",
+    "status": "PASS",
+    "error": "[Errno 13] Permission denied",
+    "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+  },
+  {
+    "test": "disable_change_enable",
+    "status": "PASS",
+    "requested": 1048576,
+    "param_mdts": 8,
+    "mdts": 8,
+    "max_hw_sectors_kb": 1024,
+    "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+  },
+  {
+    "test": "disable_change_enable",
+    "status": "PASS",
+    "requested": null,
+    "param_mdts": 0,
+    "mdts": 8,
+    "max_hw_sectors_kb": 1024,
+    "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+  },
+  {
+    "test": "ana_derived_port_receives_limit",
+    "status": "PASS",
+    "port_index": 5001,
+    "param_mdts": 6,
+    "mdts": 6,
+    "max_hw_sectors_kb": 256,
+    "io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d"
+  },
+  {
+    "test": "teardown",
+    "status": "PASS"
+  },
+  {
+    "test": "complete",
+    "status": "PASS"
+  }
+]

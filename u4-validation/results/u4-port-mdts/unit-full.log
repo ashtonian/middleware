@@ -1,0 +1,737 @@
+/usr/lib/python3/dist-packages/pytest_asyncio/plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [ 11%]
+........................................................................ [ 13%]
+........................................................................ [ 15%]
+........................................................................ [ 17%]
+........................................................................ [ 20%]
+........................................................................ [ 22%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 33%]
+........................................................................ [ 35%]
+........................................................................ [ 38%]
+........................................................................ [ 40%]
+........................................................................ [ 42%]
+........................................................................ [ 44%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+........................................................................ [ 55%]
+........................................................................ [ 58%]
+........................................................................ [ 60%]
+........................................................................ [ 62%]
+........................................................................ [ 64%]
+........................................................................ [ 67%]
+....................................FFF....FF........................... [ 69%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+...FFFFFFFFFF.F......................................................... [ 76%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 82%]
+........................................................................ [ 84%]
+........................................................................ [ 87%]
+........................................................................ [ 89%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+........................................................................ [ 96%]
+.........................................................ssss........... [ 98%]
+....................................................                     [100%]
+=================================== FAILURES ===================================
+______________ test_the_backup_round_trips_through_the_side_tree _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_the_backup_round_trips_th0')
+
+    def test_the_backup_round_trips_through_the_side_tree(tmp_path):
+        mount = str(tmp_path)
+        assert read_config_backup(mount) is None, "a dataset with no side tree holds no backup"
+    
+>       write_config_backup(mount, ROW)
+
+middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/truenas_s3/on_disk.py:102: in write_config_backup
+    with atomic_write(backup_path(mount), perms=CONFIG_BACKUP_MODE) as f:
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = '/tmp/pytest-of-root/pytest-1/test_the_backup_round_trips_th0/.truenas_s3/config_backup.json'
+mode = 'w'
+
+    @contextmanager
+    def atomic_write(target: str, mode: typing.Literal["w", "wb"] = "w", *, tmppath: str | None = None,
+                     uid: int = 0, gid: int = 0, perms: int = 0o644,
+                     noclobber: bool = False) -> typing.Generator[typing.IO[typing.Any], None, None]:
+        """Context manager for atomic file writes with symlink race protection.
+    
+        Yields a file-like object for writing. On successful context manager exit,
+        atomically replaces the target file using renameat2 with proper synchronization.
+        Uses openat2 with RESOLVE_NO_SYMLINKS and renameat2 with AT_RENAME_EXCHANGE
+        to safely replace a file's contents without risk of:
+        - Partially written files visible to readers
+        - Symlink race conditions (TOCTOU attacks)
+        - Data loss if write operation fails
+    
+        Args:
+            target: Absolute path to the file to write/replace. Path must not contain
+                    symlinks.
+            mode: File open mode, either "w" (text) or "wb" (binary). Defaults to "w".
+            tmppath: Directory for temporary file creation. If None, uses dirname(target).
+                     Must be on same filesystem as target and must not contain symlinks.
+            uid: User ID for file ownership (default: 0/root).
+            gid: Group ID for file ownership (default: 0/root).
+            perms: File permissions as octal integer (default: 0o644).
+            noclobber: If True, fail with FileExistsError when target already exists,
+                       and use AT_RENAME_NOREPLACE so the rename also fails atomically
+                       if target races into existence between the initial check and
+                       the rename. Defaults to False (existing target is replaced).
+    
+        Yields:
+            File-like object for writing
+    
+        Raises:
+            FileExistsError: If noclobber=True and target already exists.
+            OSError: If openat2/renameat2 operations fail.
+    
+        Note:
+            - tmppath and target must be on the same filesystem for rename to work
+            - With noclobber=False (default): existing target replaced via
+              AT_RENAME_EXCHANGE, or plain rename when target does not exist
+            - With noclobber=True: fail-fast on existing target, then
+              AT_RENAME_NOREPLACE on the rename to catch races
+            - File is only replaced if the context manager exits successfully
+            - If an intermediate symlink is detected during openat2 call then errno
+              will be set to ELOOP
+    
+        Example:
+            with atomic_write('/etc/config.conf') as f:
+                f.write("config data")
+            # File is atomically replaced here
+        """
+        if mode not in ("w", "wb"):
+            raise ValueError(f'{mode}: invalid mode. Only "w" and "wb" are supported.')
+    
+        if tmppath is None:
+            tmppath = os.path.dirname(target)
+    
+        with TemporaryDirectory(dir=tmppath) as tmpdir:
+            # We're using absolute paths here initially to open dir fds for the write and rename operations. This is
+            # generally susceptible to symlink races and so it's being mitigated by setting RESOLVE_NO_SYMLINKS. *IF* an
+            # intermediate symlink is discovered during path resolution in kernel (e.g. /etc/default/foo and the
+            # `/etc/default` component is a symlink), then this will fail with an OSError with errno set to ELOOP
+            dst_dirpath = os.path.dirname(target)
+            target_filename = os.path.basename(target)
+    
+>           dst_dirfd = truenas_os.openat2(dst_dirpath, os.O_DIRECTORY, resolve=truenas_os.RESOLVE_NO_SYMLINKS)
+E           OSError: [Errno 38] Function not implemented
+
+/usr/lib/python3/dist-packages/truenas_os_pyutils/io.py:191: OSError
+____________________ test_the_backup_is_rewritten_in_place _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_the_backup_is_rewritten_i0')
+
+    def test_the_backup_is_rewritten_in_place(tmp_path):
+        mount = str(tmp_path)
+>       write_config_backup(mount, ROW)
+
+middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/truenas_s3/on_disk.py:102: in write_config_backup
+    with atomic_write(backup_path(mount), perms=CONFIG_BACKUP_MODE) as f:
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = '/tmp/pytest-of-root/pytest-1/test_the_backup_is_rewritten_i0/.truenas_s3/config_backup.json'
+mode = 'w'
+
+    @contextmanager
+    def atomic_write(target: str, mode: typing.Literal["w", "wb"] = "w", *, tmppath: str | None = None,
+                     uid: int = 0, gid: int = 0, perms: int = 0o644,
+                     noclobber: bool = False) -> typing.Generator[typing.IO[typing.Any], None, None]:
+        """Context manager for atomic file writes with symlink race protection.
+    
+        Yields a file-like object for writing. On successful context manager exit,
+        atomically replaces the target file using renameat2 with proper synchronization.
+        Uses openat2 with RESOLVE_NO_SYMLINKS and renameat2 with AT_RENAME_EXCHANGE
+        to safely replace a file's contents without risk of:
+        - Partially written files visible to readers
+        - Symlink race conditions (TOCTOU attacks)
+        - Data loss if write operation fails
+    
+        Args:
+            target: Absolute path to the file to write/replace. Path must not contain
+                    symlinks.
+            mode: File open mode, either "w" (text) or "wb" (binary). Defaults to "w".
+            tmppath: Directory for temporary file creation. If None, uses dirname(target).
+                     Must be on same filesystem as target and must not contain symlinks.
+            uid: User ID for file ownership (default: 0/root).
+            gid: Group ID for file ownership (default: 0/root).
+            perms: File permissions as octal integer (default: 0o644).
+            noclobber: If True, fail with FileExistsError when target already exists,
+                       and use AT_RENAME_NOREPLACE so the rename also fails atomically
+                       if target races into existence between the initial check and
+                       the rename. Defaults to False (existing target is replaced).
+    
+        Yields:
+            File-like object for writing
+    
+        Raises:
+            FileExistsError: If noclobber=True and target already exists.
+            OSError: If openat2/renameat2 operations fail.
+    
+        Note:
+            - tmppath and target must be on the same filesystem for rename to work
+            - With noclobber=False (default): existing target replaced via
+              AT_RENAME_EXCHANGE, or plain rename when target does not exist
+            - With noclobber=True: fail-fast on existing target, then
+              AT_RENAME_NOREPLACE on the rename to catch races
+            - File is only replaced if the context manager exits successfully
+            - If an intermediate symlink is detected during openat2 call then errno
+              will be set to ELOOP
+    
+        Example:
+            with atomic_write('/etc/config.conf') as f:
+                f.write("config data")
+            # File is atomically replaced here
+        """
+        if mode not in ("w", "wb"):
+            raise ValueError(f'{mode}: invalid mode. Only "w" and "wb" are supported.')
+    
+        if tmppath is None:
+            tmppath = os.path.dirname(target)
+    
+        with TemporaryDirectory(dir=tmppath) as tmpdir:
+            # We're using absolute paths here initially to open dir fds for the write and rename operations. This is
+            # generally susceptible to symlink races and so it's being mitigated by setting RESOLVE_NO_SYMLINKS. *IF* an
+            # intermediate symlink is discovered during path resolution in kernel (e.g. /etc/default/foo and the
+            # `/etc/default` component is a symlink), then this will fail with an OSError with errno set to ELOOP
+            dst_dirpath = os.path.dirname(target)
+            target_filename = os.path.basename(target)
+    
+>           dst_dirfd = truenas_os.openat2(dst_dirpath, os.O_DIRECTORY, resolve=truenas_os.RESOLVE_NO_SYMLINKS)
+E           OSError: [Errno 38] Function not implemented
+
+/usr/lib/python3/dist-packages/truenas_os_pyutils/io.py:191: OSError
+_________________ test_an_existing_side_tree_is_used_as_found __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_an_existing_side_tree_is_0')
+
+    def test_an_existing_side_tree_is_used_as_found(tmp_path):
+        # registration made it, and its contents are the S3 service's
+        side = tmp_path / SIDE_TREE
+        side.mkdir(mode=0o700)
+        (side / "h1").mkdir()
+>       write_config_backup(str(tmp_path), ROW)
+
+middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/truenas_s3/on_disk.py:102: in write_config_backup
+    with atomic_write(backup_path(mount), perms=CONFIG_BACKUP_MODE) as f:
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = '/tmp/pytest-of-root/pytest-1/test_an_existing_side_tree_is_0/.truenas_s3/config_backup.json'
+mode = 'w'
+
+    @contextmanager
+    def atomic_write(target: str, mode: typing.Literal["w", "wb"] = "w", *, tmppath: str | None = None,
+                     uid: int = 0, gid: int = 0, perms: int = 0o644,
+                     noclobber: bool = False) -> typing.Generator[typing.IO[typing.Any], None, None]:
+        """Context manager for atomic file writes with symlink race protection.
+    
+        Yields a file-like object for writing. On successful context manager exit,
+        atomically replaces the target file using renameat2 with proper synchronization.
+        Uses openat2 with RESOLVE_NO_SYMLINKS and renameat2 with AT_RENAME_EXCHANGE
+        to safely replace a file's contents without risk of:
+        - Partially written files visible to readers
+        - Symlink race conditions (TOCTOU attacks)
+        - Data loss if write operation fails
+    
+        Args:
+            target: Absolute path to the file to write/replace. Path must not contain
+                    symlinks.
+            mode: File open mode, either "w" (text) or "wb" (binary). Defaults to "w".
+            tmppath: Directory for temporary file creation. If None, uses dirname(target).
+                     Must be on same filesystem as target and must not contain symlinks.
+            uid: User ID for file ownership (default: 0/root).
+            gid: Group ID for file ownership (default: 0/root).
+            perms: File permissions as octal integer (default: 0o644).
+            noclobber: If True, fail with FileExistsError when target already exists,
+                       and use AT_RENAME_NOREPLACE so the rename also fails atomically
+                       if target races into existence between the initial check and
+                       the rename. Defaults to False (existing target is replaced).
+    
+        Yields:
+            File-like object for writing
+    
+        Raises:
+            FileExistsError: If noclobber=True and target already exists.
+            OSError: If openat2/renameat2 operations fail.
+    
+        Note:
+            - tmppath and target must be on the same filesystem for rename to work
+            - With noclobber=False (default): existing target replaced via
+              AT_RENAME_EXCHANGE, or plain rename when target does not exist
+            - With noclobber=True: fail-fast on existing target, then
+              AT_RENAME_NOREPLACE on the rename to catch races
+            - File is only replaced if the context manager exits successfully
+            - If an intermediate symlink is detected during openat2 call then errno
+              will be set to ELOOP
+    
+        Example:
+            with atomic_write('/etc/config.conf') as f:
+                f.write("config data")
+            # File is atomically replaced here
+        """
+        if mode not in ("w", "wb"):
+            raise ValueError(f'{mode}: invalid mode. Only "w" and "wb" are supported.')
+    
+        if tmppath is None:
+            tmppath = os.path.dirname(target)
+    
+        with TemporaryDirectory(dir=tmppath) as tmpdir:
+            # We're using absolute paths here initially to open dir fds for the write and rename operations. This is
+            # generally susceptible to symlink races and so it's being mitigated by setting RESOLVE_NO_SYMLINKS. *IF* an
+            # intermediate symlink is discovered during path resolution in kernel (e.g. /etc/default/foo and the
+            # `/etc/default` component is a symlink), then this will fail with an OSError with errno set to ELOOP
+            dst_dirpath = os.path.dirname(target)
+            target_filename = os.path.basename(target)
+    
+>           dst_dirfd = truenas_os.openat2(dst_dirpath, os.O_DIRECTORY, resolve=truenas_os.RESOLVE_NO_SYMLINKS)
+E           OSError: [Errno 38] Function not implemented
+
+/usr/lib/python3/dist-packages/truenas_os_pyutils/io.py:191: OSError
+_____________ test_the_object_lock_latch_is_read_for_its_presence ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_the_object_lock_latch_is_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffd6b39c50>
+
+    def test_the_object_lock_latch_is_read_for_its_presence(tmp_path, monkeypatch):
+        store: dict[str, bytes] = {}
+    
+        def fgetxattr(fd, name):
+            try:
+                return store[name]
+            except KeyError:
+                raise OSError(errno.ENODATA, "No data available")
+    
+        monkeypatch.setattr("truenas_os.fgetxattr", fgetxattr)
+>       assert has_latch(str(tmp_path)) is False
+
+middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mount = '/tmp/pytest-of-root/pytest-1/test_the_object_lock_latch_is_0'
+
+    def has_latch(mount: str) -> bool:
+        """Whether the dataset root carries the S3 service's Object Lock
+        latch. Presence is the whole test: the latch never clears, so a root
+        carrying one is a locked bucket whatever the row says.
+    
+        A mount point that is not there holds no latch, which is a dataset
+        that is not mounted. A record that is there and will not read is not
+        a record that is not there, so every other error raises.
+        """
+        try:
+>           fd = truenas_os.openat2(mount, os.O_RDONLY | os.O_DIRECTORY)
+E           OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/truenas_s3/on_disk.py:55: OSError
+_____________ test_a_mount_point_that_is_not_there_holds_no_latch ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_a_mount_point_that_is_not0')
+
+    def test_a_mount_point_that_is_not_there_holds_no_latch(tmp_path):
+        # a dataset that is not mounted, which `force_disable_versioning`
+        # reaches whenever ZFS reports a mount point for one
+>       assert has_latch(str(tmp_path / "not-mounted")) is False
+
+middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+mount = '/tmp/pytest-of-root/pytest-1/test_a_mount_point_that_is_not0/not-mounted'
+
+    def has_latch(mount: str) -> bool:
+        """Whether the dataset root carries the S3 service's Object Lock
+        latch. Presence is the whole test: the latch never clears, so a root
+        carrying one is a locked bucket whatever the row says.
+    
+        A mount point that is not there holds no latch, which is a dataset
+        that is not mounted. A record that is there and will not read is not
+        a record that is not there, so every other error raises.
+        """
+        try:
+>           fd = truenas_os.openat2(mount, os.O_RDONLY | os.O_DIRECTORY)
+E           OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/truenas_s3/on_disk.py:55: OSError
+__________________ test_rename_vm_state_moves_both_artefacts ___________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_moves_bot0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_moves_bot0/tpm'))
+
+    def test_rename_vm_state_moves_both_artefacts(state_dirs):
+        nvram, tpm = state_dirs
+        old_nvram = _make_nvram(nvram, 1, 'foo')
+        old_tpm = _make_tpm(tpm, 1, 'foo')
+        old_nvram_ino = os.stat(old_nvram).st_ino
+        old_tpm_ino = os.stat(old_tpm).st_ino
+    
+>       rename_vm_state(1, 'foo', 1, 'bar')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:64: in rename_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_moves_bot0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+__________________ test_rename_vm_state_missing_both_is_noop ___________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_b0/tpm'))
+
+    def test_rename_vm_state_missing_both_is_noop(state_dirs):
+        # Never-booted VM: neither artefact exists. Should not raise.
+>       rename_vm_state(2, 'foo', 2, 'bar')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:64: in rename_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_b0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+____________________ test_rename_vm_state_missing_tpm_only _____________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_t0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_t0/tpm'))
+
+    def test_rename_vm_state_missing_tpm_only(state_dirs):
+        nvram, _ = state_dirs
+        _make_nvram(nvram, 3, 'foo')
+>       rename_vm_state(3, 'foo', 3, 'bar')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:64: in rename_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_t0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+___________________ test_rename_vm_state_missing_nvram_only ____________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_n0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_n0/tpm'))
+
+    def test_rename_vm_state_missing_nvram_only(state_dirs):
+        _, tpm = state_dirs
+        _make_tpm(tpm, 4, 'foo')
+>       rename_vm_state(4, 'foo', 4, 'bar')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:64: in rename_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_n0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+_________ test_rename_vm_state_stale_destination_fails_without_moving __________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_stale_des0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_stale_des0/tpm'))
+
+    def test_rename_vm_state_stale_destination_fails_without_moving(state_dirs):
+        nvram, _ = state_dirs
+        _make_nvram(nvram, 5, 'foo', b'src')
+        _make_nvram(nvram, 5, 'bar', b'stale')  # pre-existing — must not be clobbered
+        with pytest.raises(FileExistsError):
+>           rename_vm_state(5, 'foo', 5, 'bar')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:64: in rename_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_stale_des0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+_____________ test_rename_vm_state_rolls_back_nvram_when_tpm_fails _____________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_rolls_bac0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_rolls_bac0/tpm'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffd6877150>
+
+    def test_rename_vm_state_rolls_back_nvram_when_tpm_fails(state_dirs, monkeypatch):
+        nvram, tpm = state_dirs
+        _make_nvram(nvram, 6, 'foo')
+        _make_tpm(tpm, 6, 'foo')
+        # Pre-create a stale TPM destination so AT_RENAME_NOREPLACE fails on TPM.
+        _make_tpm(tpm, 6, 'bar')
+    
+        with pytest.raises(FileExistsError):
+>           rename_vm_state(6, 'foo', 6, 'bar')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:112: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:64: in rename_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_rolls_bac0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+______________________ test_delete_vm_state_removes_both _______________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_removes_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_removes_b0/tpm'))
+
+    def test_delete_vm_state_removes_both(state_dirs):
+        nvram, tpm = state_dirs
+        _make_nvram(nvram, 7, 'foo')
+        _make_tpm(tpm, 7, 'foo')
+>       delete_vm_state(7, 'foo')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:113: in delete_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_removes_b0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+__________________ test_delete_vm_state_missing_both_is_noop ___________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_missing_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_missing_b0/tpm'))
+
+    def test_delete_vm_state_missing_both_is_noop(state_dirs):
+        # Never-booted VM — neither artefact exists. Must not raise.
+>       delete_vm_state(8, 'foo')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:113: in delete_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_missing_b0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+_______________________ test_delete_vm_state_nvram_only ________________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_nvram_onl0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_nvram_onl0/tpm'))
+
+    def test_delete_vm_state_nvram_only(state_dirs):
+        nvram, _ = state_dirs
+        _make_nvram(nvram, 9, 'foo')
+>       delete_vm_state(9, 'foo')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:137: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:113: in delete_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_nvram_onl0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+________________________ test_delete_vm_state_tpm_only _________________________
+
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_tpm_only0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_tpm_only0/tpm'))
+
+    def test_delete_vm_state_tpm_only(state_dirs):
+        _, tpm = state_dirs
+        _make_tpm(tpm, 10, 'foo')
+>       delete_vm_state(10, 'foo')
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:144: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+middlewared/plugins/vm/utils.py:113: in delete_vm_state
+    nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_tpm_only0/nvram'
+
+    def _open_state_parent(path: str) -> int:
+        # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
+        # /var/db/system/vm/{nvram,tpm} between our checks and the actual rename.
+        # O_PATH is enough: the fd is only used as an anchor for *at() syscalls.
+        assert path in (SYSTEM_NVRAM_FOLDER_PATH, SYSTEM_TPM_FOLDER_PATH), path
+>       return truenas_os.openat2(
+            path,
+            os.O_PATH | os.O_DIRECTORY,
+            resolve=truenas_os.RESOLVE_NO_SYMLINKS,
+        )
+E       OSError: [Errno 38] Function not implemented
+
+middlewared/plugins/vm/utils.py:41: OSError
+______________________ test_rename_rejects_symlink_parent ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_rejects_symlink_pa0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffe42f5be0>
+
+    def test_rename_rejects_symlink_parent(tmp_path, monkeypatch):
+        # The real system dataset has no symlinks in the path; this test proves
+        # that if a symlink is injected at the parent dir, RESOLVE_NO_SYMLINKS
+        # blocks the rename entirely.
+        real_nvram = tmp_path / 'real_nvram'
+        real_tpm = tmp_path / 'real_tpm'
+        real_nvram.mkdir()
+        real_tpm.mkdir()
+        link_nvram = tmp_path / 'link_nvram'
+        link_nvram.symlink_to(real_nvram)
+        monkeypatch.setattr(vm_utils, 'SYSTEM_NVRAM_FOLDER_PATH', str(link_nvram))
+        monkeypatch.setattr(vm_utils, 'SYSTEM_TPM_FOLDER_PATH', str(real_tpm))
+    
+        with pytest.raises(OSError) as ei:
+            rename_vm_state(14, 'foo', 14, 'bar')
+>       assert ei.value.errno == errno.ELOOP
+E       AssertionError: assert 38 == 40
+E        +  where 38 = OSError(38, 'Function not implemented').errno
+E        +    where OSError(38, 'Function not implemented') = <ExceptionInfo OSError(38, 'Function not implemented') tblen=3>.value
+E        +  and   40 = errno.ELOOP
+
+middlewared/pytest/unit/plugins/vm/test_state_utils.py:175: AssertionError
+=========================== short test summary info ============================
+FAILED middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py::test_the_backup_round_trips_through_the_side_tree
+FAILED middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py::test_the_backup_is_rewritten_in_place
+FAILED middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py::test_an_existing_side_tree_is_used_as_found
+FAILED middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py::test_the_object_lock_latch_is_read_for_its_presence
+FAILED middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py::test_a_mount_point_that_is_not_there_holds_no_latch
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_vm_state_moves_both_artefacts
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_vm_state_missing_both_is_noop
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_vm_state_missing_tpm_only
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_vm_state_missing_nvram_only
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_vm_state_stale_destination_fails_without_moving
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_vm_state_rolls_back_nvram_when_tpm_fails
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_state_removes_both
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_state_missing_both_is_noop
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_state_nvram_only
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_state_tpm_only
+FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_rejects_symlink_parent
+16 failed, 3200 passed, 4 skipped, 259 warnings in 203.25s (0:03:23)
+exit=1

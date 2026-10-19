@@ -8,7 +8,7 @@ rootdir: /work/src/middlewared
 configfile: pyproject.toml
 plugins: typeguard-4.4.2, pyfakefs-5.8.0, asyncio-0.25.1, dependency-0.5.1, rerunfailures-15.0, timeout-2.3.1
 asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None
-collecting ... collected 39 items / 1 error
+collecting ... collected 33 items / 1 error
 
 ==================================== ERRORS ====================================
 _ ERROR collecting middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py _
@@ -23,5 +23,5 @@ E   ImportError: cannot import name 'mdts_exponent' from 'middlewared.utils.nvme
 =========================== short test summary info ============================
 ERROR middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py
 !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
-========================= 6 warnings, 1 error in 5.06s =========================
+========================= 6 warnings, 1 error in 7.19s =========================
 exit=2

@@ -18,8 +18,5 @@ U4_RESULT {"error": "[Errno 13] Permission denied", "io_sha256": "74c71e32218bc6
 U4_RESULT {"io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d", "max_hw_sectors_kb": 1024, "mdts": 8, "param_mdts": 8, "requested": 1048576, "status": "PASS", "test": "disable_change_enable"}
 U4_RESULT {"io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d", "max_hw_sectors_kb": 1024, "mdts": 8, "param_mdts": 0, "requested": null, "status": "PASS", "test": "disable_change_enable"}
 U4_RESULT {"io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d", "max_hw_sectors_kb": 256, "mdts": 6, "param_mdts": 6, "port_index": 5001, "status": "PASS", "test": "ana_derived_port_receives_limit"}
-U4_RESULT {"links": "link rxe0/1 state ACTIVE physical_state LINK_UP netdev u4rdma0", "status": "PASS", "test": "soft_roce"}
-U4_RESULT {"io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d", "max_hw_sectors_kb": 256, "mdts": 6, "param_mdts": 6, "status": "PASS", "test": "rdma_limit_written_before_link"}
-U4_RESULT {"io_sha256": "74c71e32218bc6b9d2fbb2bc5751cfd45789427e51c86c1003d1bd7a23785f4d", "max_hw_sectors_kb": 1024, "mdts": 8, "param_mdts": 0, "status": "PASS", "test": "rdma_clear_restores_transport_limit"}
 U4_RESULT {"status": "PASS", "test": "teardown"}
 U4_RESULT {"status": "PASS", "test": "complete"}

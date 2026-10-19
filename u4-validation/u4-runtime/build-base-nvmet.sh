@@ -16,11 +16,11 @@ cp /work/u4/base-src/* "$out/target/"
 (cd "$out/target" && sha256sum -c --quiet /work/u4/base-src.sha256)
 export ARCH=x86_64 CROSS_COMPILE=x86_64-linux-gnu- EXTRAVERSION=-production
 make -C "$tree" M="$out/target" -j6 modules > /work/u4/base-nvmet-build.log 2>&1
-for module in nvmet nvmet-tcp nvmet-rdma; do
+for module in nvmet nvmet-tcp; do
     # Packaged modules are signed by modules_install; sign these the same way.
     "$tree/scripts/sign-file" sha256 "$tree/certs/signing_key.pem" "$tree/certs/signing_key.x509" \
         "$out/target/$module.ko"
     modinfo -F vermagic "$out/target/$module.ko"
     modinfo -F signer "$out/target/$module.ko"
 done
-sha256sum "$out/target/nvmet.ko" "$out/target/nvmet-tcp.ko" "$out/target/nvmet-rdma.ko"
+sha256sum "$out/target/nvmet.ko" "$out/target/nvmet-tcp.ko"

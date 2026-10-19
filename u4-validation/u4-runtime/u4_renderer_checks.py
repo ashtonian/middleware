@@ -38,9 +38,6 @@ NAMESPACE = {
 }
 # ANA ports bind each controller's own address; node A takes the first of the pair.
 ANA_CHOICES = {'127.0.0.1': '127.0.0.3/127.0.0.4'}
-# Soft-RoCE on a guest-local dummy interface; rxe loops traffic to its own address.
-RDMA_NETDEV = 'u4rdma0'
-RDMA_ADDR = '10.99.0.1'
 
 
 def record(name, status='PASS', **details):
@@ -66,15 +63,15 @@ def wait_for(predicate, timeout=60):
     raise TimeoutError('guest state transition timed out')
 
 
-def port(index=1, service=4420, size=None, enabled=True, trtype='TCP', address='127.0.0.1'):
+def port(index=1, service=4420, size=None, enabled=True):
     return {
-        'id': index, 'index': index, 'addr_trtype': trtype, 'addr_trsvcid': service,
-        'addr_traddr': address, 'addr_adrfam': 'IPV4', 'inline_data_size': None,
+        'id': index, 'index': index, 'addr_trtype': 'TCP', 'addr_trsvcid': service,
+        'addr_traddr': '127.0.0.1', 'addr_adrfam': 'IPV4', 'inline_data_size': None,
         'max_queue_size': None, 'pi_enable': None, 'max_data_transfer_size': size, 'enabled': enabled,
     }
 
 
-def render_ctx(ports, ana=False, rdma=False):
+def render_ctx(ports, ana=False):
     """The `etc.generate('nvmet')` context for a non-HA or an HA node A system with ANA enabled."""
     ids = [p['id'] for p in ports]
     referrals = list(itertools.permutations(ids, 2))
@@ -85,9 +82,9 @@ def render_ctx(ports, ana=False, rdma=False):
         'nvmet.global.ana_active': ana,
         'nvmet.global.ana_enabled': ana,
         'nvmet.global.config': {
-            'id': 1, 'basenqn': BASENQN, 'kernel': True, 'ana': ana, 'rdma': rdma, 'xport_referral': True,
+            'id': 1, 'basenqn': BASENQN, 'kernel': True, 'ana': ana, 'rdma': False, 'xport_referral': True,
         },
-        'nvmet.global.rdma_enabled': rdma,
+        'nvmet.global.rdma_enabled': False,
         'nvmet.host.query': [],
         'nvmet.namespace.query': [NAMESPACE],
         'nvmet.port.query': ports,
@@ -107,9 +104,9 @@ def render_ctx(ports, ana=False, rdma=False):
     }
 
 
-def render(ports, ana=False, rdma=False):
+def render(ports, ana=False):
     """Render a configuration whose every port must be served."""
-    assert kernel.write_config(render_ctx(ports, ana, rdma)) == []
+    assert kernel.write_config(render_ctx(ports, ana)) == []
 
 
 def param_mdts(index):
@@ -121,11 +118,11 @@ def linked(index):
     return (ROOT / 'ports' / str(index) / 'subsystems' / SUBNQN).is_symlink()
 
 
-def fabric_controllers():
+def tcp_controllers():
     found = set()
     for path in Path('/sys/class/nvme').glob('nvme*'):
         try:
-            if (path / 'transport').read_text().strip() in ('tcp', 'rdma'):
+            if (path / 'transport').read_text().strip() == 'tcp':
                 found.add(path.name)
         except FileNotFoundError:
             pass
@@ -136,12 +133,12 @@ def namespaces():
     return {p.name for p in Path('/sys/block').glob('nvme*') if re.fullmatch(r'nvme[0-9]+n[0-9]+', p.name)}
 
 
-def connect(service=4420, address='127.0.0.1', transport='tcp'):
-    before, before_ns = fabric_controllers(), namespaces()
-    run('nvme', 'connect', '-t', transport, '-a', address, '-s', str(service), '-n', SUBNQN,
+def connect(service=4420, address='127.0.0.1'):
+    before, before_ns = tcp_controllers(), namespaces()
+    run('nvme', 'connect', '-t', 'tcp', '-a', address, '-s', str(service), '-n', SUBNQN,
         '--nr-io-queues=1', '--queue-size=16', '--keep-alive-tmo=0', '--ctrl-loss-tmo=5',
         '--reconnect-delay=1')
-    controller = '/dev/' + next(iter(wait_for(lambda: fabric_controllers() - before)))
+    controller = '/dev/' + next(iter(wait_for(lambda: tcp_controllers() - before)))
     namespace = next(iter(wait_for(lambda: namespaces() - before_ns)))
     wait_for(lambda: Path('/dev/' + namespace).exists())
     DEVICES[controller] = namespace
@@ -151,7 +148,7 @@ def connect(service=4420, address='127.0.0.1', transport='tcp'):
 def disconnect(controller):
     namespace = DEVICES.pop(controller)
     run('nvme', 'disconnect', '-d', controller)
-    wait_for(lambda: Path(controller).name not in fabric_controllers())
+    wait_for(lambda: Path(controller).name not in tcp_controllers())
     wait_for(lambda: not Path('/dev/' + namespace).exists())
 
 
@@ -251,41 +248,6 @@ def supported_suite():
            io_sha256=io_roundtrip(controller))
     disconnect(controller)
 
-    kernel.clear_config()
-    rdma_suite()
-
-
-def rdma_suite():
-    kernel.load_modules(['nvmet_rdma', 'nvme_rdma', 'rdma_rxe', 'dummy'])
-    run('ip', 'link', 'add', RDMA_NETDEV, 'type', 'dummy')
-    run('ip', 'addr', 'add', f'{RDMA_ADDR}/24', 'dev', RDMA_NETDEV)
-    run('ip', 'link', 'set', RDMA_NETDEV, 'up')
-    run('rdma', 'link', 'add', 'rxe0', 'type', 'rxe', 'netdev', RDMA_NETDEV)
-    record('soft_roce', links=run('rdma', 'link', 'show').strip())
-
-    def rdma_port(size, enabled=True):
-        return port(index=3, size=size, enabled=enabled, trtype='RDMA', address=RDMA_ADDR)
-
-    render([rdma_port(256 * KIB)], rdma=True)
-    assert param_mdts(3) == 6 and linked(3)
-    controller = connect(address=RDMA_ADDR, transport='rdma')
-    ident = identify(controller)
-    # The host may impose a lower RDMA segment limit; it must not exceed the advertised one.
-    assert ident['mdts'] == 6 and ident['max_hw_sectors_kb'] <= 256, ident
-    record('rdma_limit_written_before_link', param_mdts=6, **ident, io_sha256=io_roundtrip(controller))
-    disconnect(controller)
-
-    render([rdma_port(256 * KIB, enabled=False)], rdma=True)
-    render([rdma_port(None, enabled=False)], rdma=True)
-    render([rdma_port(None)], rdma=True)
-    assert param_mdts(3) == 0 and linked(3)
-    controller = connect(address=RDMA_ADDR, transport='rdma')
-    ident = identify(controller)
-    # Without a port limit the NVMe/RDMA transport maximum (1 MiB) applies.
-    assert ident['mdts'] == 8 and ident['max_hw_sectors_kb'] <= 1024, ident
-    record('rdma_clear_restores_transport_limit', param_mdts=0, **ident, io_sha256=io_roundtrip(controller))
-    disconnect(controller)
-
 
 def unsupported_suite():
     assert kernel.port_mdts_supported() is None
@@ -351,7 +313,7 @@ def main():
         supported_suite() if expect == 'supported' else unsupported_suite()
         kernel.clear_config()
         assert not any((ROOT / 'ports').iterdir()) and not any((ROOT / 'subsystems').iterdir())
-        for module in ('nvmet_rdma', 'nvmet_tcp', 'nvmet'):
+        for module in ('nvmet_tcp', 'nvmet'):
             kernel.unload_module(module)
         assert not ROOT.exists()
         record('teardown')

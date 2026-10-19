@@ -325,8 +325,8 @@ class NVMetPortService(CRUDService):
 
     async def __validate_max_data_transfer_size(self, verrors, data, schema_name):
         attribute = f'{schema_name}.max_data_transfer_size'
-        if data['addr_trtype'] != PORT_TRTYPE.TCP.api:
-            verrors.add(attribute, 'Maximum data transfer size is only supported on TCP ports.')
+        if data['addr_trtype'] not in (PORT_TRTYPE.TCP.api, PORT_TRTYPE.RDMA.api):
+            verrors.add(attribute, 'Maximum data transfer size is only supported on TCP and RDMA ports.')
         elif not (await self.middleware.call('nvmet.global.config'))['kernel']:
             verrors.add(attribute, 'Maximum data transfer size is not supported by the SPDK NVMe target.')
         elif await self.middleware.run_in_thread(port_mdts_supported) is False:

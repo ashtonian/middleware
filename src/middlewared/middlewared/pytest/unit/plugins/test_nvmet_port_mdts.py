@@ -79,12 +79,13 @@ async def validate_port_update(m, old, new, mdts_supported=True):
 
 @pytest.mark.parametrize("mdts_supported", [True, None])
 @pytest.mark.parametrize("size", [None, 16384, 1048576])
+@pytest.mark.parametrize("trtype", ["TCP", "RDMA"])
 @pytest.mark.asyncio
-async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
+async def test_kernel_port_accepts_limit(trtype, size, mdts_supported):
     errors = await validate_port_update(
         port_middleware(),
-        port_entry(),
-        port_entry(max_data_transfer_size=size),
+        port_entry(addr_trtype=trtype),
+        port_entry(addr_trtype=trtype, max_data_transfer_size=size),
         mdts_supported,
     )
 
@@ -95,16 +96,16 @@ async def test_tcp_kernel_port_accepts_limit(size, mdts_supported):
     "new, kernel, mdts_supported, message",
     [
         (
-            port_entry(addr_trtype="RDMA", max_data_transfer_size=262144),
-            True,
-            True,
-            "Maximum data transfer size is only supported on TCP ports.",
-        ),
-        (
             port_entry(addr_trtype="FC", addr_trsvcid=None, max_data_transfer_size=262144),
             True,
             True,
-            "Maximum data transfer size is only supported on TCP ports.",
+            "Maximum data transfer size is only supported on TCP and RDMA ports.",
+        ),
+        (
+            port_entry(addr_trtype="RDMA", max_data_transfer_size=262144),
+            False,
+            None,
+            "Maximum data transfer size is not supported by the SPDK NVMe target.",
         ),
         (
             port_entry(max_data_transfer_size=262144),

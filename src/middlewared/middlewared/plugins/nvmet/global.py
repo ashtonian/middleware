@@ -98,6 +98,14 @@ class NVMetGlobalService(SystemServiceService, NVMetStandbyMixin):
                         f'{schema_name}.kernel',
                         'Cannot switch nvmet backend because CPU lacks required capabilities.'
                     )
+                elif limited := await self.middleware.call(
+                    'nvmet.port.query', [['max_data_transfer_size', '!=', None]], {'select': ['index']}
+                ):
+                    indexes = ', '.join(f'#{port["index"]}' for port in limited)
+                    verrors.add(
+                        f'{schema_name}.kernel',
+                        f'SPDK does not support a maximum data transfer size.  Clear it on port(s) {indexes} first.'
+                    )
             elif await self.running():
                 verrors.add(
                     f'{schema_name}.kernel',

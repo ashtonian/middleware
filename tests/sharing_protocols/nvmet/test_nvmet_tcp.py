@@ -1783,6 +1783,66 @@ class TestNVMe(NVMeRunning):
             ):
                 call('nvmet.port.update', port2['id'], {'addr_trtype': 'RDMA'})
 
+    def test__port_max_data_transfer_size(self, fixture_port, loopback_client, zvol1):
+        port_id = fixture_port['id']
+        param_mdts_path = f'/sys/kernel/config/nvmet/ports/{fixture_port["index"]}/param_mdts'
+        if not call('nvmet.global.config')['kernel']:
+            with assert_validation_errors(
+                'nvmet_port_update.max_data_transfer_size',
+                'Maximum data transfer size is not supported by the SPDK NVMe target.',
+            ):
+                call('nvmet.port.update', port_id, {'max_data_transfer_size': 256 * 1024})
+            return
+
+        if not ssh(f'test -e {param_mdts_path}', check=False, complete_response=True)['result']:
+            with assert_validation_errors(
+                'nvmet_port_update.max_data_transfer_size',
+                'The running kernel NVMe target does not support a maximum data transfer size.',
+            ):
+                call('nvmet.port.update', port_id, {'max_data_transfer_size': 256 * 1024})
+            return
+
+        def param_mdts():
+            return int(ssh(f'cat {param_mdts_path}').strip())
+
+        def identify_mdts(nqn):
+            with loopback_client.connect_ctx(nqn):
+                paths = self.subsys_paths(loopback_client.nvme_list_subsys(), nqn)
+                assert len(paths) == 1, paths
+                ctrl = loopback_client.run_command(f'nvme id-ctrl /dev/{paths[0]["Name"]} --output-format=json')
+                return json.loads(ctrl)['mdts']
+
+        try:
+            port = call('nvmet.port.update', port_id, {'max_data_transfer_size': 256 * 1024})
+            assert port['max_data_transfer_size'] == 256 * 1024
+            # MDTS counts 4 KiB pages as a power of two
+            assert param_mdts() == 6
+
+            with self.subsys(SUBSYS_NAME1, fixture_port, allow_any_host=True, zvol_name=zvol1['name']) as subsys:
+                assert identify_mdts(subsys['nqn']) == 6
+
+                with assert_validation_errors(
+                    'nvmet_port_update.max_data_transfer_size',
+                    'Cannot change max_data_transfer_size on an active port.  Disable first to allow change.',
+                ):
+                    call('nvmet.port.update', port_id, {'max_data_transfer_size': MB})
+                assert param_mdts() == 6
+
+                call('nvmet.port.update', port_id, {'enabled': False})
+                call('nvmet.port.update', port_id, {'max_data_transfer_size': MB})
+                call('nvmet.port.update', port_id, {'enabled': True})
+                assert param_mdts() == 8
+                assert identify_mdts(subsys['nqn']) == 8
+
+                call('nvmet.port.update', port_id, {'enabled': False})
+                call('nvmet.port.update', port_id, {'max_data_transfer_size': None})
+                call('nvmet.port.update', port_id, {'enabled': True})
+                assert param_mdts() == 0
+                # The NVMe/TCP transport limit (1 MiB) still applies without a port limit
+                assert identify_mdts(subsys['nqn']) == 8
+        finally:
+            call('nvmet.port.update', port_id, {'enabled': True, 'max_data_transfer_size': None})
+
     def test__ana_settings(self, fixture_port, loopback_client, zvol1, zvol2):
         """
         Test that the global ANA setting, and per-subsystem ANA settings

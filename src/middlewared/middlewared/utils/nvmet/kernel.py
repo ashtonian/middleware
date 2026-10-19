@@ -1,5 +1,6 @@
 from collections import defaultdict
 from contextlib import contextmanager
+import errno
 import logging
 import os
 import pathlib
@@ -15,6 +16,7 @@ from middlewared.plugins.nvmet.constants import (
     PORT_TRTYPE,
 )
 from middlewared.plugins.zfs_.utils import zvol_name_to_path
+from middlewared.service_exception import CallError
 
 from .render_common import (
     ANA_PORT_INDEX_OFFSET,
@@ -31,6 +33,17 @@ from .render_common import (
 )
 
 logger = logging.getLogger(__name__)
+
+# The kernel target reports CAP.MPSMIN = 0, so MDTS is a power-of-two count of 4 KiB pages.
+MDTS_PAGE_SIZE = 4096
+
+
+def mdts_exponent(max_data_transfer_size: int) -> int:
+    pages, remainder = divmod(max_data_transfer_size, MDTS_PAGE_SIZE)
+    # An exponent of zero would mean "no limit", so a single page is not representable.
+    if remainder or pages < 2 or pages & (pages - 1):
+        raise ValueError(f'{max_data_transfer_size}: not representable as an NVMe MDTS value')
+    return pages.bit_length() - 1
 
 
 class NvmetConfig:
@@ -94,8 +107,11 @@ class NvmetConfig:
         return retries
 
     def set_attrs(self, path: pathlib.Path, attrs: dict, retries: int, render_ctx: dict):
-        new_attrs = self.map_attrs(attrs, render_ctx)
+        new_attrs = self.supported_attrs(path, self.map_attrs(attrs, render_ctx))
         return self.set_mapped_attrs(path, new_attrs, retries, render_ctx)
+
+    def supported_attrs(self, path: pathlib.Path, attrs: dict):
+        return attrs
 
     def values_match(self, oldval, newval):
         if oldval == newval:
@@ -109,7 +125,7 @@ class NvmetConfig:
         return False
 
     def update_attrs(self, path: pathlib.Path, attrs: dict, render_ctx: dict):
-        new_attrs = self.map_attrs(attrs, render_ctx)
+        new_attrs = self.supported_attrs(path, self.map_attrs(attrs, render_ctx))
         for k, v in new_attrs.items():
             p = pathlib.Path(path, k)
             curval = p.read_text().strip()
@@ -183,8 +199,22 @@ class NvmetPortConfig(NvmetConfig):
                         result['param_max_queue_size'] = str(v)
                 case 'pi_enable':
                     result['param_pi_enable'] = '0' if v in (None, False) else '1'
+                case 'max_data_transfer_size':
+                    # Writing 0 clears a limit left by an earlier configuration.
+                    result['param_mdts'] = '0' if v is None else str(mdts_exponent(v))
 
         return result
+
+    def supported_attrs(self, path: pathlib.Path, attrs: dict):
+        if 'param_mdts' in attrs and not pathlib.Path(path, 'param_mdts').exists():
+            if attrs['param_mdts'] != '0':
+                # Fail before any subsystem is linked rather than serve the port without its limit.
+                raise CallError(
+                    f'NVMe target port {path.name}: the running kernel does not support max_data_transfer_size',
+                    errno.EOPNOTSUPP,
+                )
+            del attrs['param_mdts']
+        return attrs
 
     def port_ana_path(self, path: pathlib.Path, render_ctx: dict):
         match render_ctx['failover.node']:
@@ -724,6 +754,18 @@ def clear_config():
 
 def nvmet_kernel_module_loaded():
     return pathlib.Path(NVMET_KERNEL_CONFIG_DIR).is_dir()
+
+
+def port_mdts_supported() -> bool | None:
+    """
+    Whether configfs ports accept a per-port MDTS, or None when there is no port to inspect,
+    e.g. because the target is not running.
+    """
+    try:
+        port = next(pathlib.Path(NVMET_KERNEL_CONFIG_DIR, 'ports').iterdir())
+    except (FileNotFoundError, StopIteration):
+        return None
+    return pathlib.Path(port, 'param_mdts').exists()
 
 
 def load_modules(modules):

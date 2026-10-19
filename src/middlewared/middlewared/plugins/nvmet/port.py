@@ -16,6 +16,7 @@ from middlewared.api.current import (
 from middlewared.service import CRUDService, private
 from middlewared.service_exception import MatchNotFound, ValidationErrors
 import middlewared.sqlalchemy as sa
+from middlewared.utils.nvmet.kernel import port_mdts_supported
 
 from .constants import PORT_ADDR_FAMILY, PORT_TRTYPE, similar_ports
 
@@ -37,6 +38,7 @@ class NVMetPortModel(sa.Model):
     nvmet_port_inline_data_size = sa.Column(sa.Integer(), nullable=True, default=None)
     nvmet_port_max_queue_size = sa.Column(sa.Integer(), nullable=True, default=None)
     nvmet_port_pi_enable = sa.Column(sa.Boolean(), nullable=True, default=None)
+    nvmet_port_max_data_transfer_size = sa.Column(sa.Integer(), nullable=True, default=None)
     nvmet_port_enabled = sa.Column(sa.Boolean())
 
 
@@ -317,6 +319,20 @@ class NVMetPortService(CRUDService):
             if not await self.middleware.call('nvmet.global.rdma_capable'):
                 verrors.add(f'{schema_name}.addr_trtype',
                             "This platform cannot support NVMe-oF(RDMA) or is missing an RDMA capable NIC.")
+
+        if data['max_data_transfer_size'] is not None:
+            await self.__validate_max_data_transfer_size(verrors, data, schema_name)
+
+    async def __validate_max_data_transfer_size(self, verrors, data, schema_name):
+        attribute = f'{schema_name}.max_data_transfer_size'
+        if data['addr_trtype'] != PORT_TRTYPE.TCP.api:
+            verrors.add(attribute, 'Maximum data transfer size is only supported on TCP ports.')
+        elif not (await self.middleware.call('nvmet.global.config'))['kernel']:
+            verrors.add(attribute, 'Maximum data transfer size is not supported by the SPDK NVMe target.')
+        elif await self.middleware.run_in_thread(port_mdts_supported) is False:
+            # When this cannot be determined yet, rendering refuses to link
+            # subsystems to a port whose limit cannot be applied.
+            verrors.add(attribute, 'The running kernel NVMe target does not support a maximum data transfer size.')
 
     @api_method(NVMetPortTransportAddressChoicesArgs, NVMetPortTransportAddressChoicesResult)
     async def transport_address_choices(self, addr_trtype, force_ana):

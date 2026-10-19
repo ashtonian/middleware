@@ -17,11 +17,11 @@ Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 /usr/lib/python3.13/importlib/__init__.py:88: in import_module
     return _bootstrap._gcd_import(name[level:], package, level)
-middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py:7: in <module>
-    from middlewared.utils.nvmet.kernel import NvmetPortConfig, mdts_exponent, port_mdts_supported
+middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py:10: in <module>
+    from middlewared.utils.nvmet.kernel import NvmetPortConfig, NvmetPortSubsysConfig, mdts_exponent, port_mdts_supported
 E   ImportError: cannot import name 'mdts_exponent' from 'middlewared.utils.nvmet.kernel' (/work/src/middlewared/middlewared/utils/nvmet/kernel.py)
 =========================== short test summary info ============================
 ERROR middlewared/pytest/unit/utils/test_nvmet_kernel_port_mdts.py
 !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
-========================= 6 warnings, 1 error in 4.77s =========================
+========================= 6 warnings, 1 error in 7.19s =========================
 exit=2

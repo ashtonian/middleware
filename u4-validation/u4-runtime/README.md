@@ -19,7 +19,7 @@ gathers for a non-HA system and for HA node A with ANA enabled.
 | Guest | Kernel | Checks |
 | --- | --- | --- |
 | `supported` | Qualified U3 production package `6.18.55-production+truenas` (`9d9d9d7`) | Limit written before link; Identify MDTS and host `max_hw_sectors_kb`; 1 MiB direct I/O; unchanged re-render on an enabled port; kernel refusal of a changed limit on an enabled port; disable/change/enable to 1 MiB and to `null`; ANA-derived port `5001` |
-| `unsupported` | Same kernel image with `nvmet`/`nvmet-tcp` rebuilt from TrueNAS base `e43b652` | `null` ports render and serve without `param_mdts`; a non-null limit raises `EOPNOTSUPP` before its port is linked, other ports keep serving; clearing the limit links the port |
+| `unsupported` | Same kernel image with `nvmet`/`nvmet-tcp` rebuilt from TrueNAS base `e43b652` | `null` ports render and serve without `param_mdts`; a port with a limit is reported unserved and gets no subsystems while other ports serve, on a running target and on a fresh start; a served port whose limit becomes inapplicable loses its links; clearing the limit serves the port |
 
 U3 changes only `drivers/nvme/target`, the `nvmet` and `nvmet-tcp` modules. For
 the target driver, the production kernel with base modules is the base kernel.
@@ -29,9 +29,8 @@ configuration and `Module.symvers`, then signs with the tree's build key, as
 `modules_install` does for packaged modules.
 
 The guest runs Python 3.10 from the U3 Ubuntu 22.04 userspace; middleware ships
-Python 3.13. The renderer files come unmodified from the U4 commit. Two modules
-are stubbed because their real imports need appliance packages:
-`service_exception.CallError`, which the renderer only constructs, and
+Python 3.13. The renderer files come unmodified from the U4 commit. One module
+is stubbed because its real imports need appliance packages:
 `plugins/zfs_/utils.zvol_name_to_path`, which FILE namespaces never call.
 Empty files replace the package `__init__` modules.
 

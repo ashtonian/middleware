@@ -12,7 +12,6 @@ import time
 import traceback
 
 sys.path.insert(0, '/u4/mw')
-from middlewared.service_exception import CallError  # noqa: E402  (stub, see README)
 from middlewared.utils.nvmet import kernel  # noqa: E402  (unmodified candidate file)
 
 ROOT = Path('/sys/kernel/config/nvmet')
@@ -105,6 +104,11 @@ def render_ctx(ports, ana=False):
     }
 
 
+def render(ports, ana=False):
+    """Render a configuration whose every port must be served."""
+    assert kernel.write_config(render_ctx(ports, ana)) == []
+
+
 def param_mdts(index):
     path = ROOT / 'ports' / str(index) / 'param_mdts'
     return int(path.read_text()) if path.exists() else None
@@ -193,7 +197,7 @@ def supported_suite():
     record('capability_unknown_without_ports')
 
     one = [port(size=256 * KIB)]
-    kernel.write_config(render_ctx(one))
+    render(one)
     record_port_attrs()
     assert param_mdts(1) == 6 and linked(1)
     assert kernel.port_mdts_supported() is True
@@ -204,7 +208,7 @@ def supported_suite():
 
     # The kernel refuses attribute writes on an enabled port, so an unchanged
     # value must not be written again.
-    kernel.write_config(render_ctx(one))
+    render(one)
     assert param_mdts(1) == 6 and linked(1)
     record('unchanged_rerender_on_enabled_port', io_sha256=io_roundtrip(controller))
 
@@ -216,11 +220,11 @@ def supported_suite():
     # The middleware maintenance path: disable, change, enable as separate renders.
     previous = 256 * KIB
     for size, expected in ((1024 * KIB, 8), (None, 0)):
-        kernel.write_config(render_ctx([port(size=previous, enabled=False)]))
+        render([port(size=previous, enabled=False)])
         assert not linked(1)
-        kernel.write_config(render_ctx([port(size=size, enabled=False)]))
+        render([port(size=size, enabled=False)])
         assert param_mdts(1) == expected and not linked(1)
-        kernel.write_config(render_ctx([port(size=size)]))
+        render([port(size=size)])
         assert param_mdts(1) == expected and linked(1)
         controller = connect()
         ident = identify(controller)
@@ -233,7 +237,7 @@ def supported_suite():
 
     kernel.clear_config()
     ana = [port(size=256 * KIB)]
-    kernel.write_config(render_ctx(ana, ana=True))
+    render(ana, ana=True)
     assert not (ROOT / 'ports' / '1').exists()
     assert param_mdts(5001) == 6 and linked(5001)
     assert (ROOT / 'ports' / '5001' / 'addr_traddr').read_text().strip() == '127.0.0.3'
@@ -250,7 +254,7 @@ def unsupported_suite():
     record('capability_unknown_without_ports')
 
     legacy = [port()]
-    kernel.write_config(render_ctx(legacy))
+    render(legacy)
     record_port_attrs()
     assert param_mdts(1) is None and linked(1)
     assert kernel.port_mdts_supported() is False
@@ -259,13 +263,13 @@ def unsupported_suite():
     record('legacy_null_port_serves', param_mdts_attribute=False, **ident, io_sha256=io_roundtrip(controller))
 
     limited = legacy + [port(index=2, service=4421, size=256 * KIB)]
-    message = expect_render_error(render_ctx(limited), CallError, errno.EOPNOTSUPP)
+    unserved = kernel.write_config(render_ctx(limited))
+    assert unserved == ['127.0.0.1:4421'], unserved
     assert linked(1) and not linked(2)
     assert connect_refused(4421)
-    record('limit_fails_closed_before_link', error=message, port2_linked=False,
-           io_sha256_port1=io_roundtrip(controller))
+    record('limited_port_left_unserved', unserved=unserved, io_sha256_port1=io_roundtrip(controller))
 
-    kernel.write_config(render_ctx(legacy + [port(index=2, service=4421)]))
+    render(legacy + [port(index=2, service=4421)])
     assert linked(1) and linked(2)
     # Native multipath would join a second controller to the existing namespace
     # head, so drop port 1's path to prove I/O through port 2 alone.
@@ -273,6 +277,20 @@ def unsupported_suite():
     second = connect(4421)
     record('cleared_limit_links_port', io_sha256_port2=io_roundtrip(second))
     disconnect(second)
+
+    # A served port whose limit becomes inapplicable stops serving instead of serving without it.
+    assert kernel.write_config(render_ctx(limited)) == ['127.0.0.1:4421']
+    assert linked(1) and not linked(2)
+    assert connect_refused(4421)
+    record('served_port_unlinked_when_limit_inapplicable')
+
+    # A target start on this kernel with a stored limit serves every other port.
+    kernel.clear_config()
+    assert kernel.write_config(render_ctx(limited)) == ['127.0.0.1:4421']
+    assert linked(1) and not linked(2)
+    controller = connect()
+    record('fresh_start_serves_other_ports', io_sha256_port1=io_roundtrip(controller))
+    disconnect(controller)
 
 
 def main():

@@ -18,7 +18,7 @@ The event loop scope for asynchronous fixtures will default to the fixture cachi
 ........................................................................ [ 31%]
 ........................................................................ [ 33%]
 ........................................................................ [ 35%]
-........................................................................ [ 38%]
+........................................................................ [ 37%]
 ........................................................................ [ 40%]
 ........................................................................ [ 42%]
 ........................................................................ [ 44%]
@@ -35,7 +35,7 @@ The event loop scope for asynchronous fixtures will default to the fixture cachi
 ....................................FFF....FF........................... [ 69%]
 ........................................................................ [ 71%]
 ........................................................................ [ 73%]
-...FFFFFFFFFF.F......................................................... [ 76%]
+...FFFFFFFFFF.F......................................................... [ 75%]
 ........................................................................ [ 78%]
 ........................................................................ [ 80%]
 ........................................................................ [ 82%]
@@ -45,12 +45,12 @@ The event loop scope for asynchronous fixtures will default to the fixture cachi
 ........................................................................ [ 91%]
 ........................................................................ [ 93%]
 ........................................................................ [ 96%]
-.........................................................ssss........... [ 98%]
-....................................................                     [100%]
+............................................................ssss........ [ 98%]
+.......................................................                  [100%]
 =================================== FAILURES ===================================
 ______________ test_the_backup_round_trips_through_the_side_tree _______________
 
-tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_the_backup_round_trips_th0')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_the_backup_round_trips_th0')
 
     def test_the_backup_round_trips_through_the_side_tree(tmp_path):
         mount = str(tmp_path)
@@ -66,7 +66,7 @@ middlewared/plugins/truenas_s3/on_disk.py:102: in write_config_backup
     return next(self.gen)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-target = '/tmp/pytest-of-root/pytest-1/test_the_backup_round_trips_th0/.truenas_s3/config_backup.json'
+target = '/tmp/pytest-of-root/pytest-5/test_the_backup_round_trips_th0/.truenas_s3/config_backup.json'
 mode = 'w'
 
     @contextmanager
@@ -139,7 +139,7 @@ E           OSError: [Errno 38] Function not implemented
 /usr/lib/python3/dist-packages/truenas_os_pyutils/io.py:191: OSError
 ____________________ test_the_backup_is_rewritten_in_place _____________________
 
-tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_the_backup_is_rewritten_i0')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_the_backup_is_rewritten_i0')
 
     def test_the_backup_is_rewritten_in_place(tmp_path):
         mount = str(tmp_path)
@@ -153,7 +153,7 @@ middlewared/plugins/truenas_s3/on_disk.py:102: in write_config_backup
     return next(self.gen)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-target = '/tmp/pytest-of-root/pytest-1/test_the_backup_is_rewritten_i0/.truenas_s3/config_backup.json'
+target = '/tmp/pytest-of-root/pytest-5/test_the_backup_is_rewritten_i0/.truenas_s3/config_backup.json'
 mode = 'w'
 
     @contextmanager
@@ -226,7 +226,7 @@ E           OSError: [Errno 38] Function not implemented
 /usr/lib/python3/dist-packages/truenas_os_pyutils/io.py:191: OSError
 _________________ test_an_existing_side_tree_is_used_as_found __________________
 
-tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_an_existing_side_tree_is_0')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_an_existing_side_tree_is_0')
 
     def test_an_existing_side_tree_is_used_as_found(tmp_path):
         # registration made it, and its contents are the S3 service's
@@ -243,7 +243,7 @@ middlewared/plugins/truenas_s3/on_disk.py:102: in write_config_backup
     return next(self.gen)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-target = '/tmp/pytest-of-root/pytest-1/test_an_existing_side_tree_is_0/.truenas_s3/config_backup.json'
+target = '/tmp/pytest-of-root/pytest-5/test_an_existing_side_tree_is_0/.truenas_s3/config_backup.json'
 mode = 'w'
 
     @contextmanager
@@ -316,8 +316,8 @@ E           OSError: [Errno 38] Function not implemented
 /usr/lib/python3/dist-packages/truenas_os_pyutils/io.py:191: OSError
 _____________ test_the_object_lock_latch_is_read_for_its_presence ______________
 
-tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_the_object_lock_latch_is_0')
-monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffd6b39c50>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_the_object_lock_latch_is_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffd6632660>
 
     def test_the_object_lock_latch_is_read_for_its_presence(tmp_path, monkeypatch):
         store: dict[str, bytes] = {}
@@ -334,7 +334,7 @@ monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffd6b39c50>
 middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:98: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-mount = '/tmp/pytest-of-root/pytest-1/test_the_object_lock_latch_is_0'
+mount = '/tmp/pytest-of-root/pytest-5/test_the_object_lock_latch_is_0'
 
     def has_latch(mount: str) -> bool:
         """Whether the dataset root carries the S3 service's Object Lock
@@ -352,7 +352,7 @@ E           OSError: [Errno 38] Function not implemented
 middlewared/plugins/truenas_s3/on_disk.py:55: OSError
 _____________ test_a_mount_point_that_is_not_there_holds_no_latch ______________
 
-tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_a_mount_point_that_is_not0')
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_a_mount_point_that_is_not0')
 
     def test_a_mount_point_that_is_not_there_holds_no_latch(tmp_path):
         # a dataset that is not mounted, which `force_disable_versioning`
@@ -362,7 +362,7 @@ tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_a_mount_point_that_is_no
 middlewared/pytest/unit/plugins/test_truenas_s3_on_disk.py:107: 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-mount = '/tmp/pytest-of-root/pytest-1/test_a_mount_point_that_is_not0/not-mounted'
+mount = '/tmp/pytest-of-root/pytest-5/test_a_mount_point_that_is_not0/not-mounted'
 
     def has_latch(mount: str) -> bool:
         """Whether the dataset root carries the S3 service's Object Lock
@@ -380,7 +380,7 @@ E           OSError: [Errno 38] Function not implemented
 middlewared/plugins/truenas_s3/on_disk.py:55: OSError
 __________________ test_rename_vm_state_moves_both_artefacts ___________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_moves_bot0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_moves_bot0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_moves_bot0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_moves_bot0/tpm'))
 
     def test_rename_vm_state_moves_both_artefacts(state_dirs):
         nvram, tpm = state_dirs
@@ -397,7 +397,7 @@ middlewared/plugins/vm/utils.py:64: in rename_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_moves_bot0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_rename_vm_state_moves_bot0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -414,7 +414,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 __________________ test_rename_vm_state_missing_both_is_noop ___________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_b0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_b0/tpm'))
 
     def test_rename_vm_state_missing_both_is_noop(state_dirs):
         # Never-booted VM: neither artefact exists. Should not raise.
@@ -426,7 +426,7 @@ middlewared/plugins/vm/utils.py:64: in rename_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_b0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_b0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -443,7 +443,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 ____________________ test_rename_vm_state_missing_tpm_only _____________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_t0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_t0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_t0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_t0/tpm'))
 
     def test_rename_vm_state_missing_tpm_only(state_dirs):
         nvram, _ = state_dirs
@@ -456,7 +456,7 @@ middlewared/plugins/vm/utils.py:64: in rename_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_t0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_t0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -473,7 +473,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 ___________________ test_rename_vm_state_missing_nvram_only ____________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_n0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_n0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_n0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_n0/tpm'))
 
     def test_rename_vm_state_missing_nvram_only(state_dirs):
         _, tpm = state_dirs
@@ -486,7 +486,7 @@ middlewared/plugins/vm/utils.py:64: in rename_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_missing_n0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_rename_vm_state_missing_n0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -503,7 +503,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 _________ test_rename_vm_state_stale_destination_fails_without_moving __________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_stale_des0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_stale_des0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_stale_des0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_stale_des0/tpm'))
 
     def test_rename_vm_state_stale_destination_fails_without_moving(state_dirs):
         nvram, _ = state_dirs
@@ -518,7 +518,7 @@ middlewared/plugins/vm/utils.py:64: in rename_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_stale_des0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_rename_vm_state_stale_des0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -535,8 +535,8 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 _____________ test_rename_vm_state_rolls_back_nvram_when_tpm_fails _____________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_rolls_bac0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_vm_state_rolls_bac0/tpm'))
-monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffd6877150>
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_rolls_bac0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_vm_state_rolls_bac0/tpm'))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffe33bda90>
 
     def test_rename_vm_state_rolls_back_nvram_when_tpm_fails(state_dirs, monkeypatch):
         nvram, tpm = state_dirs
@@ -554,7 +554,7 @@ middlewared/plugins/vm/utils.py:64: in rename_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_rename_vm_state_rolls_bac0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_rename_vm_state_rolls_bac0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -571,7 +571,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 ______________________ test_delete_vm_state_removes_both _______________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_removes_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_removes_b0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_removes_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_removes_b0/tpm'))
 
     def test_delete_vm_state_removes_both(state_dirs):
         nvram, tpm = state_dirs
@@ -585,7 +585,7 @@ middlewared/plugins/vm/utils.py:113: in delete_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_removes_b0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_delete_vm_state_removes_b0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -602,7 +602,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 __________________ test_delete_vm_state_missing_both_is_noop ___________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_missing_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_missing_b0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_missing_b0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_missing_b0/tpm'))
 
     def test_delete_vm_state_missing_both_is_noop(state_dirs):
         # Never-booted VM — neither artefact exists. Must not raise.
@@ -614,7 +614,7 @@ middlewared/plugins/vm/utils.py:113: in delete_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_missing_b0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_delete_vm_state_missing_b0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -631,7 +631,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 _______________________ test_delete_vm_state_nvram_only ________________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_nvram_onl0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_nvram_onl0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_nvram_onl0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_nvram_onl0/tpm'))
 
     def test_delete_vm_state_nvram_only(state_dirs):
         nvram, _ = state_dirs
@@ -644,7 +644,7 @@ middlewared/plugins/vm/utils.py:113: in delete_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_nvram_onl0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_delete_vm_state_nvram_onl0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -661,7 +661,7 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 ________________________ test_delete_vm_state_tpm_only _________________________
 
-state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_tpm_only0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-1/test_delete_vm_state_tpm_only0/tpm'))
+state_dirs = (PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_tpm_only0/nvram'), PosixPath('/tmp/pytest-of-root/pytest-5/test_delete_vm_state_tpm_only0/tpm'))
 
     def test_delete_vm_state_tpm_only(state_dirs):
         _, tpm = state_dirs
@@ -674,7 +674,7 @@ middlewared/plugins/vm/utils.py:113: in delete_vm_state
     nvram_fd = _open_state_parent(SYSTEM_NVRAM_FOLDER_PATH)
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = '/tmp/pytest-of-root/pytest-1/test_delete_vm_state_tpm_only0/nvram'
+path = '/tmp/pytest-of-root/pytest-5/test_delete_vm_state_tpm_only0/nvram'
 
     def _open_state_parent(path: str) -> int:
         # RESOLVE_NO_SYMLINKS guards against an attacker dropping a symlink inside
@@ -691,8 +691,8 @@ E       OSError: [Errno 38] Function not implemented
 middlewared/plugins/vm/utils.py:41: OSError
 ______________________ test_rename_rejects_symlink_parent ______________________
 
-tmp_path = PosixPath('/tmp/pytest-of-root/pytest-1/test_rename_rejects_symlink_pa0')
-monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffe42f5be0>
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-5/test_rename_rejects_symlink_pa0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fffe33be4a0>
 
     def test_rename_rejects_symlink_parent(tmp_path, monkeypatch):
         # The real system dataset has no symlinks in the path; this test proves
@@ -733,5 +733,5 @@ FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_st
 FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_state_nvram_only
 FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_delete_vm_state_tpm_only
 FAILED middlewared/pytest/unit/plugins/vm/test_state_utils.py::test_rename_rejects_symlink_parent
-16 failed, 3200 passed, 4 skipped, 259 warnings in 203.25s (0:03:23)
+16 failed, 3203 passed, 4 skipped, 259 warnings in 137.51s (0:02:17)
 exit=1

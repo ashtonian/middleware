@@ -21,7 +21,6 @@ for f in plugins/nvmet/__init__.py plugins/nvmet/constants.py utils/nvmet/__init
 done
 # Empty package markers stand in for package __init__ modules with appliance imports.
 : > "$mw/__init__.py"; : > "$mw/plugins/__init__.py"; : > "$mw/plugins/zfs_/__init__.py"; : > "$mw/utils/__init__.py"
-cp "$here/mw-stubs/middlewared/service_exception.py" "$mw/"
 cp "$here/mw-stubs/middlewared/plugins/zfs_/utils.py" "$mw/plugins/zfs_/"
 
 mkdir -p "$stage/u4/base-src" "$stage/u4/candidate-src"

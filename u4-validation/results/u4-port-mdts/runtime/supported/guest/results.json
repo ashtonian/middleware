@@ -4,7 +4,7 @@
     "status": "PASS",
     "expect": "supported",
     "kernel": "6.18.55-production+truenas",
-    "renderer_sha256": "e96b35c9a7dbef7b64c0476e7b40692bf2e9a8292ebaaaaab30e1d66d21a1ab1"
+    "renderer_sha256": "43d9bed295fb82128a56640cd72bbbf34d78cadf82e29c6644b134df672592b6"
   },
   {
     "test": "capability_unknown_without_ports",

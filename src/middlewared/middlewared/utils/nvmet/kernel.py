@@ -1,6 +1,5 @@
 from collections import defaultdict
 from contextlib import contextmanager
-import errno
 import logging
 import os
 import pathlib
@@ -16,7 +15,6 @@ from middlewared.plugins.nvmet.constants import (
     PORT_TRTYPE,
 )
 from middlewared.plugins.zfs_.utils import zvol_name_to_path
-from middlewared.service_exception import CallError
 
 from .render_common import (
     ANA_PORT_INDEX_OFFSET,
@@ -107,10 +105,10 @@ class NvmetConfig:
         return retries
 
     def set_attrs(self, path: pathlib.Path, attrs: dict, retries: int, render_ctx: dict):
-        new_attrs = self.supported_attrs(path, self.map_attrs(attrs, render_ctx))
+        new_attrs = self.supported_attrs(path, attrs, self.map_attrs(attrs, render_ctx))
         return self.set_mapped_attrs(path, new_attrs, retries, render_ctx)
 
-    def supported_attrs(self, path: pathlib.Path, attrs: dict):
+    def supported_attrs(self, path: pathlib.Path, entry: dict, attrs: dict):
         return attrs
 
     def values_match(self, oldval, newval):
@@ -125,7 +123,7 @@ class NvmetConfig:
         return False
 
     def update_attrs(self, path: pathlib.Path, attrs: dict, render_ctx: dict):
-        new_attrs = self.supported_attrs(path, self.map_attrs(attrs, render_ctx))
+        new_attrs = self.supported_attrs(path, attrs, self.map_attrs(attrs, render_ctx))
         for k, v in new_attrs.items():
             p = pathlib.Path(path, k)
             curval = p.read_text().strip()
@@ -158,6 +156,11 @@ class NvmetPortConfig(NvmetConfig):
     directory = 'ports'
     query = 'nvmet.port.query'
     query_key = 'index'
+
+    def __init__(self, unserved: dict[str, str]):
+        # Ports whose requested limit the kernel cannot apply, keyed by configfs
+        # port directory.  NvmetPortSubsysConfig links no subsystems to them.
+        self.unserved = unserved
 
     def config_dict(self, render_ctx):
         # For ports we may want to inject or remove ports wrt the ANA
@@ -205,15 +208,13 @@ class NvmetPortConfig(NvmetConfig):
 
         return result
 
-    def supported_attrs(self, path: pathlib.Path, attrs: dict):
+    def supported_attrs(self, path: pathlib.Path, entry: dict, attrs: dict):
         if 'param_mdts' in attrs and not pathlib.Path(path, 'param_mdts').exists():
-            if attrs['param_mdts'] != '0':
-                # Fail before any subsystem is linked rather than serve the port without its limit.
-                raise CallError(
-                    f'NVMe target port {path.name}: the running kernel does not support max_data_transfer_size',
-                    errno.EOPNOTSUPP,
-                )
-            del attrs['param_mdts']
+            if attrs.pop('param_mdts') != '0':
+                port = f'{entry["addr_traddr"]}:{entry["addr_trsvcid"]}'
+                logger.warning('%s: not serving NVMe target port %s, the running kernel does not support '
+                               'max_data_transfer_size', port, path.name)
+                self.unserved[path.name] = port
         return attrs
 
     def port_ana_path(self, path: pathlib.Path, render_ctx: dict):
@@ -637,6 +638,9 @@ class NvmetPortSubsysConfig(NvmetLinkConfig):
     dst_dir = 'subsystems'
     dst_query_keys = ['subsys', 'subnqn']
 
+    def __init__(self, unserved: dict[str, str]):
+        self.unserved = unserved
+
     def src_dir_name(self, entry, render_ctx: dict):
         if (index := port_subsys_index(entry, render_ctx)) is None:
             return index
@@ -647,19 +651,27 @@ class NvmetPortSubsysConfig(NvmetLinkConfig):
         return f'{entry[self.dst_query_keys[0]][self.dst_query_keys[1]]}'
 
     def create_links(self, entry: dict, render_ctx: dict):
-        # There are two reasons why we might NOT want to create a link
+        # There are three reasons why we might NOT want to create a link
         # 1. The port is not enabled
         # 2. The port is RDMA, but the global RDMA setting is off
+        # 3. The kernel cannot apply the port's requested limit
         if not entry['port']['enabled']:
             return False
         if entry['port']['addr_trtype'] == PORT_TRTYPE.RDMA.api and not render_ctx['nvmet.global.rdma_enabled']:
             return False
+        index = port_subsys_index(entry, render_ctx)
+        if index is not None and str(index) in self.unserved:
+            return False
         return True
 
 
-def write_config(config):
+def write_config(config) -> list[str]:
+    """
+    Render `config` to configfs.  Return the ports left without subsystems
+    because the kernel cannot apply their max_data_transfer_size.
+    """
     if not pathlib.Path(NVMET_KERNEL_CONFIG_DIR).exists():
-        return
+        return []
 
     # Render operations are context managers that do
     # 1. Create-style operations
@@ -668,17 +680,19 @@ def write_config(config):
     #
     # Therefore we can nest them to enfore the necessary
     # order of operations.
+    unserved = {}
     with (
         NvmetSubsysConfig().render(config),
         NvmetHostConfig().render(config),
-        NvmetPortConfig().render(config),
+        NvmetPortConfig(unserved).render(config),
         NvmetPortReferralConfig().render(config),
         NvmetPortAnaReferralConfig().render(config),
         NvmetHostSubsysConfig().render(config),
-        NvmetPortSubsysConfig().render(config),
+        NvmetPortSubsysConfig(unserved).render(config),
         NvmetNamespaceConfig().render(config),
     ):
         pass
+    return sorted(set(unserved.values()))
 
 
 def _map_device_path(device_type, device_path):

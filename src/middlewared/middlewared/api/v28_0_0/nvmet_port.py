@@ -20,8 +20,8 @@ __all__ = [
 
 FabricTransportType: TypeAlias = Literal['TCP', 'RDMA', 'FC']
 AddressFamily: TypeAlias = Literal['IPV4', 'IPV6', 'FC']
-# Powers of two from 16 KiB to 1 MiB (the kernel NVMe/TCP target maximum).  Smaller sizes cannot carry the
-# target's 8208-byte ANA log page in one transfer, so Linux hosts would disable ANA.
+# Powers of two from 16 KiB to 1 MiB (the kernel NVMe/TCP and NVMe/RDMA target maximum).  Smaller sizes cannot carry
+# the target's 8208-byte ANA log page in one transfer, so Linux hosts would disable ANA.
 MaxDataTransferSize: TypeAlias = Literal[16384, 32768, 65536, 131072, 262144, 524288, 1048576]
 
 
@@ -58,8 +58,8 @@ class NVMetPortEntry(BaseModel):
         default=None,
         description=(
             "Maximum Data Transfer Size (MDTS) in bytes that controllers on this port advertise to hosts, or `null` "
-            "for the transport default.  Only supported for TCP ports with the kernel NVMe target.  Hosts apply a "
-            "changed value when they next connect."
+            "for the transport default.  A smaller transport limit still applies.  Only supported for TCP and RDMA "
+            "ports with the kernel NVMe target.  Hosts apply a changed value when they next connect."
         ),
     )
     # Not supported at this time
